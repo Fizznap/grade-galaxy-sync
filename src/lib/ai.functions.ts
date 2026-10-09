@@ -19,7 +19,7 @@ export const askInsights = createServerFn({ method: "POST" })
       .join("\n");
     const system = `You are the KRYPTEDU AI Insights assistant for campus leadership. Answer only from the institutional data below. Be concise and structured: start with a one-line answer, then short bullet points with evidence (names, roll numbers, numbers). Suggest concrete interventions when relevant. Use markdown sparingly (bold, bullets). Data:\n${table}`;
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { reply: "", error: "AI is not configured." };
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/integration")({
   head: () => ({ meta: [{ title: "Data Integration — KRYPTEDU" }, { name: "description", content: "Import and validate institutional data." }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(importsQuery), context.queryClient.ensureQueryData(studentsQuery)]),
   component: Integration,
-  errorComponent: ({ error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
 });
 
 const ICONS: Record<Category, typeof Activity> = {
@@ -48,7 +48,7 @@ function Integration() {
       if (known.has(String(roll_no))) {
         const { error } = await supabase.from("students").update({ ...fields, updated_at: new Date().toISOString() }).eq("roll_no", String(roll_no));
         if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
-      } else if (fields.name && fields.department) {
+      } else if (fields["name"] && fields["department"]) {
         const { error } = await supabase.from("students").insert({ roll_no: String(roll_no), ...fields } as never);
         if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
       } else {
@@ -59,7 +59,7 @@ function Integration() {
     await supabase.from("data_imports").insert({
       category: cat, filename: file.name, row_count: ok,
       status: errors.length === 0 ? "Completed" : ok > 0 ? "Warning" : "Failed",
-      message: errors.length ? `${errors.length} issue(s)` : "All rows validated", created_by: u.user?.id,
+      message: errors.length ? `${errors.length} issue(s)` : "All rows validated", created_by: u.user?.id ?? null,
     });
     setResult({ ok, errors });
     setBusy(false);

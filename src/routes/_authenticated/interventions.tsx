@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/interventions")({
   head: () => ({ meta: [{ title: "Interventions — KRYPTEDU" }, { name: "description", content: "Track student support actions." }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Interventions,
-  errorComponent: ({ error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
 });
 
 const STATUSES = ["Open", "In Progress", "Completed"];

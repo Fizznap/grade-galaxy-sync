@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — KRYPTEDU" }, { name: "description", content: "Segmentation and cohort analytics." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(studentsQuery),
   component: Analytics,
-  errorComponent: ({ error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
 });
 
 const tt = { borderRadius: 12, border: "1px solid var(--color-border)", fontSize: 12 };

@@ -21,12 +21,12 @@ export function InterventionDialog({ students, defaultStudentId, trigger }: { st
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.title.trim()) return toast.error("Add a title");
+    if (!f.title.trim()) { toast.error("Add a title"); return; }
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("interventions").insert({ ...f, due_date: f.due_date || null, created_by: u.user?.id });
+    const { error } = await supabase.from("interventions").insert({ ...f, due_date: f.due_date || null, created_by: u.user?.id ?? null });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Intervention created");
     qc.invalidateQueries({ queryKey: ["interventions"] });
     setOpen(false);

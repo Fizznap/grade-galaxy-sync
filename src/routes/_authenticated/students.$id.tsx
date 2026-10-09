@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/students/$id")({
   },
   component: Profile,
   notFoundComponent: () => <Empty title="Student not found" />,
-  errorComponent: ({ error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
 });
 
 // Deterministic trend derived from current values (semester history placeholder for demo data)
