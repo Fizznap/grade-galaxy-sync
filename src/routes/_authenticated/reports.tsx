@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
@@ -18,6 +19,7 @@ function download(name: string, rows: (string | number)[][]) {
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
   a.download = name;
   a.click();
+  if (rows.length <= 1) toast.info("No matching records — the file has column headers only.");
 }
 const studentRows = (l: Scored[]) => [
   ["Roll", "Name", "Department", "Year", "CGPA", "Attendance", "Success", "Academic risk", "Placement risk", "Segment"],
