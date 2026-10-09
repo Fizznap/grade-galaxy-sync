@@ -97,6 +97,24 @@ export type Database = {
           },
         ]
       }
+      notification_reads: {
+        Row: {
+          notification_key: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          notification_key: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          notification_key?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           attendance: number

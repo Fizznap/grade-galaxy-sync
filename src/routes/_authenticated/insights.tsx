@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, useEffect } from "react";
-import { ArrowUp, RotateCcw, Sparkles, SquarePen } from "lucide-react";
+import { ArrowUp, RotateCcw, Sparkles, Square, SquarePen } from "lucide-react";
 import { askInsights } from "@/lib/ai.functions";
 import { PageHeader } from "@/components/kr";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ function Insights() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  const ctrl = useRef<AbortController | null>(null);
   useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [msgs, busy]);
 
   async function send(text: string, base: Msg[] = msgs) {
@@ -42,14 +43,27 @@ function Insights() {
     setMsgs(next);
     setInput("");
     setBusy(true);
+    const ac = new AbortController();
+    ctrl.current = ac;
     try {
-      const r = await ask({ data: { messages: next.map(({ role, content }) => ({ role, content })) } });
+      const r = await ask({ data: { messages: next.map(({ role, content }) => ({ role, content })) }, signal: ac.signal });
+      if (ac.signal.aborted) return;
       setMsgs([...next, { role: "assistant", content: r.error ?? r.reply, ...(r.error ? { failed: true } : {}) }]);
     } catch {
+      if (ac.signal.aborted) return;
       setMsgs([...next, { role: "assistant", content: "The assistant is unavailable right now.", failed: true }]);
     } finally {
-      setBusy(false);
+      if (ctrl.current === ac) { ctrl.current = null; setBusy(false); }
     }
+  }
+
+  function stop() {
+    const ac = ctrl.current;
+    if (!ac) return;
+    ac.abort();
+    ctrl.current = null;
+    setBusy(false);
+    setMsgs((m) => [...m, { role: "assistant", content: "Stopped — no answer was generated.", failed: true }]);
   }
 
   return (
@@ -80,7 +94,11 @@ function Insights() {
       </div>
       <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="sticky bottom-24 mt-4 flex items-center gap-2 rounded-2xl border bg-background p-2 shadow-soft lg:bottom-6">
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your students…" className="h-10 flex-1 bg-transparent px-3 text-sm outline-none" />
-        <button type="submit" disabled={busy || !input.trim()} aria-label="Send" className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"><ArrowUp className="size-4" /></button>
+        {busy ? (
+          <button type="button" onClick={stop} aria-label="Stop generating" className="press flex h-10 items-center gap-1.5 rounded-xl bg-foreground px-3 text-xs font-medium text-background"><Square className="size-3.5 fill-current" /> Stop</button>
+        ) : (
+          <button type="submit" disabled={!input.trim()} aria-label="Send" className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"><ArrowUp className="size-4" /></button>
+        )}
       </form>
     </div>
   );
