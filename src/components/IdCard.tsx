@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { RotateCw, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,14 +72,14 @@ export function ProfileIdButton({ className }: { className?: string }) {
       <button type="button" aria-label="Show my ID card" onClick={() => setOpen(true)} className={cn("press grid size-10 shrink-0 place-items-center rounded-full bg-ai text-sm font-bold text-primary-foreground shadow-float", className)}>
         {me?.name?.[0]?.toUpperCase() ?? "·"}
       </button>
-      {open && (
+      {open && createPortal(
         <div role="dialog" aria-modal="true" aria-label="My ID card" className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <IdCard />
             <button type="button" onClick={() => setOpen(false)} className="glass press mx-auto mt-3 flex items-center gap-1 rounded-full px-4 py-2 text-sm"><X className="size-4" /> Close</button>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   );
 }
