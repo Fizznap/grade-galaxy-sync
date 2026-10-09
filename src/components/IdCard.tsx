@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "./kr";
 import { cn } from "@/lib/utils";
 
-type U = { id: string; email?: string; name: string; created?: string };
+type U = { id: string; email: string | undefined; name: string; created: string | undefined };
 
 function useMe() {
   const [me, setMe] = useState<U | null>(null);
