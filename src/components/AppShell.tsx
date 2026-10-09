@@ -4,6 +4,7 @@ import {
   Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle, ArrowUpRight,
 } from "lucide-react";
 import { Wordmark } from "./kr";
+import { ProfileIdButton } from "./IdCard";
 import { cn } from "@/lib/utils";
 
 const primary = [
@@ -42,18 +43,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavItem key={item.to} {...item} active={isActive(item.to)} />
           ))}
         </nav>
-        <div className="mt-auto px-3 text-[11px] leading-relaxed text-subtle">
-          Understand. Predict.
-          <br />
-          Improve Student Success.
+        <div className="mt-auto flex items-center gap-3 px-2">
+          <ProfileIdButton />
+          <div className="text-[11px] leading-relaxed text-subtle">Tap for your<br />ID card</div>
         </div>
       </aside>
 
       <header className="liquid-glass sticky top-0 z-20 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <Wordmark />
-        <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border border-border bg-secondary/70 text-primary transition-colors hover:bg-selected">
-          <Bell className="size-4" strokeWidth={1.6} />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border border-border bg-secondary/70 text-primary transition-colors hover:bg-selected">
+            <Bell className="size-4" strokeWidth={1.6} />
+          </Link>
+          <ProfileIdButton />
+        </div>
       </header>
 
       <main className="px-5 pb-44 pt-6 lg:ml-64 lg:px-10 lg:pb-12 lg:pt-10">
