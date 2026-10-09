@@ -12,11 +12,25 @@ export const askInsights = createServerFn({ method: "POST" })
     return { messages: d.messages.slice(-12).map((m) => ({ role: m.role, content: String(m.content).slice(0, 4000) })) };
   })
   .handler(async ({ data, context }) => {
-    const { data: roleData } = await context.supabase.from("user_roles").select("role").eq("user_id", context.user.id).single();
+    const reqId = globalThis.crypto?.randomUUID() || Math.random().toString(36).substring(2, 15);
+    console.log(`[AI Insights] [${reqId}] Request received. User ID: ${context.user.id}`);
+
+    const { data: roleData, error: roleError } = await context.supabase.from("user_roles").select("role").eq("user_id", context.user.id).single();
+    if (roleError) {
+      console.error(`[AI Insights] [${reqId}] Session validation failed.`, { code: roleError.code, message: roleError.message });
+    }
     const userRole = roleData?.role || "pending";
-    if (userRole === "pending") return { reply: "", error: "Account pending approval." };
+    console.log(`[AI Insights] [${reqId}] Session validation complete. Role: ${userRole}`);
+
+    if (userRole === "pending") {
+      console.warn(`[AI Insights] [${reqId}] Access denied for pending role.`);
+      return { reply: "", error: "Account pending approval." };
+    }
 
     const key = process.env["GEMINI_API_KEY"];
+    if (!key) {
+      console.warn(`[AI Insights] [${reqId}] GEMINI_API_KEY is not set. Falling back to deterministic response.`);
+    }
 
     let system = "";
     let systemInstruction = "";
@@ -24,10 +38,15 @@ export const askInsights = createServerFn({ method: "POST" })
     let fallbackReply = "";
 
     if (userRole === "student") {
+      console.log(`[AI Insights] [${reqId}] Fetching data for student ID: ${context.user.id}`);
       const { data: student, error } = await context.supabase.from("students").select("*").eq("user_id", context.user.id).single();
-      if (error || !student) return { reply: "", error: "Could not load student data." };
+      if (error || !student) {
+        console.error(`[AI Insights] [${reqId}] Could not load student data.`, { code: error?.code, message: error?.message });
+        return { reply: "", error: "Could not load student data." };
+      }
       
       const scoredStudent = score(student as unknown as StudentRow);
+      console.log(`[AI Insights] [${reqId}] Data retrieval complete for student.`);
       
       systemInstruction = `You are a personalized KRYPTEDU academic advisor for a student named ${scoredStudent.name}. Provide structured feedback based on their metrics.`;
       
@@ -84,9 +103,15 @@ Analyze this student data and the user query to provide insights in JSON format.
         roleInstructions = "You must focus your analysis on academics, attendance, and learning outcomes.";
       }
 
+      console.log(`[AI Insights] [${reqId}] Fetching cohort data for role: ${userRole}`);
       const { data: rows, error } = await context.supabase.from("students").select("*");
-      if (error) return { reply: "", error: "Could not load student data." };
+      if (error) {
+        console.error(`[AI Insights] [${reqId}] Could not load student data.`, { code: error.code, message: error.message });
+        return { reply: "", error: "Could not load student data." };
+      }
       const scored = (rows as unknown as StudentRow[]).map(score);
+      console.log(`[AI Insights] [${reqId}] Data retrieval complete. Cohort size: ${scored.length}`);
+
       const table = scored
         .map((s) => `${s.roll_no}|${s.name}|${s.department}|Y${s.year}|CGPA ${s.cgpa}|Att ${s.attendance}|LMS ${s.lms_activity}|Eng ${s.engagement}|Plc ${s.placement_readiness}|Skl ${s.skills_score}|Backlogs ${s.backlogs}|Success ${s.successScore}|AcadRisk ${s.academicRisk}|PlcRisk ${s.placementRisk}|${s.segment}`)
         .join("\n");
@@ -119,12 +144,15 @@ Analyze this student data and the user query to provide insights in JSON format.
     }
 
     if (!key) {
+      console.log(`[AI Insights] [${reqId}] Sending deterministic fallback response.`);
       return { reply: fallbackReply, error: null };
     }
 
     try {
       const ai = new GoogleGenAI({ apiKey: key });
       const modelId = process.env["GEMINI_MODEL"] || "gemini-2.5-flash";
+      console.log(`[AI Insights] [${reqId}] Sending request to Gemini using model ${modelId}`);
+      
       const response = await ai.models.generateContent({
         model: modelId,
         contents: [
@@ -137,9 +165,14 @@ Analyze this student data and the user query to provide insights in JSON format.
           responseSchema: responseSchema as any
         }
       });
+      console.log(`[AI Insights] [${reqId}] Gemini request successful.`);
       return { reply: response.text ?? "", error: null };
     } catch (err: any) {
-      console.error("AI gateway error", err);
-      return { reply: "", error: "The assistant is unavailable right now." };
+      console.error(`[AI Insights] [${reqId}] AI gateway error`, {
+        name: err.name,
+        message: err.message,
+        status: err.status,
+      });
+      return { reply: "", error: "The assistant is unavailable right now. Please try again later." };
     }
   });
