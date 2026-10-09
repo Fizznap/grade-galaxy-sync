@@ -63,7 +63,7 @@ function Insights() {
     ac.abort();
     ctrl.current = null;
     setBusy(false);
-    setMsgs((m) => [...m, { role: "assistant", content: "_Stopped._", failed: true }]);
+    setMsgs((m) => [...m, { role: "assistant", content: "Stopped — no answer was generated.", failed: true }]);
   }
 
   return (
