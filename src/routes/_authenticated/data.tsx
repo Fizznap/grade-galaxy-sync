@@ -71,7 +71,10 @@ function Integration() {
          } else if (rpcData && (rpcData as any).success === false) {
              errors.push(`Database error: ${(rpcData as any).error}`);
          } else {
-             ok = toImport.length;
+             ok = (rpcData as any).rows_inserted || 0;
+             if (ok < toImport.length) {
+                errors.push(`Skipped ${toImport.length - ok} exact duplicate or superseded records.`);
+             }
          }
       }
 

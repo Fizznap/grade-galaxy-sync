@@ -125,14 +125,19 @@ BEGIN
     UPDATE public.students s
     SET 
         cgpa = (
-            SELECT SUM(grade_points) / NULLIF(SUM(credits), 0)
+            SELECT SUM(credits * grade_points) / NULLIF(SUM(credits), 0)
             FROM public.academic_records
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
         backlogs = (
             SELECT COUNT(*)::integer
-            FROM public.academic_records
-            WHERE student_id = target_student_id AND is_backlog = true AND supersedes_record_id IS NULL
+            FROM (
+                SELECT DISTINCT ON (subject_code) is_backlog
+                FROM public.academic_records
+                WHERE student_id = target_student_id AND supersedes_record_id IS NULL
+                ORDER BY subject_code, recorded_at DESC
+            ) latest_subjects
+            WHERE is_backlog = true
         ),
         attendance = (
             SELECT COALESCE(
@@ -143,7 +148,7 @@ BEGIN
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
         lms_activity = (
-            SELECT (COUNT(*) * 5)::numeric
+            SELECT SUM(duration_minutes)::numeric
             FROM public.lms_activity_records
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
@@ -153,25 +158,27 @@ BEGIN
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
         placement_readiness = (
-            SELECT AVG(score / max_score * 100)
+            SELECT AVG(score / NULLIF(max_score, 0) * 100)
             FROM public.placement_records
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
         skills_score = (
-            SELECT AVG(score / max_score * 100)
+            SELECT AVG(score / NULLIF(max_score, 0) * 100)
             FROM public.skills_records
             WHERE student_id = target_student_id AND supersedes_record_id IS NULL
         ),
         feedback_score = (
-            SELECT AVG(score / max_score * 100)
+            SELECT AVG(score / NULLIF(max_score, 0) * 100)
             FROM public.feedback_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
+            WHERE student_id = target_student_id AND supersedes_record_id IS NULL AND is_confidential = false
         )
     WHERE id = target_student_id;
 
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+REVOKE ALL ON FUNCTION public.update_student_cache() FROM PUBLIC;
 
 CREATE TRIGGER on_academic_change AFTER INSERT OR UPDATE OR DELETE ON public.academic_records FOR EACH ROW EXECUTE FUNCTION public.update_student_cache();
 CREATE TRIGGER on_attendance_change AFTER INSERT OR UPDATE OR DELETE ON public.attendance_records FOR EACH ROW EXECUTE FUNCTION public.update_student_cache();
@@ -251,31 +258,40 @@ DECLARE
     v_caller_uid uuid := auth.uid();
 BEGIN
     -- 1. Security & Role Validation
-    IF v_caller_uid IS NULL OR NOT public.is_staff(v_caller_uid) THEN
-        RAISE EXCEPTION 'Unauthorized: only staff can import data';
+    IF v_caller_uid IS NULL THEN
+        RAISE EXCEPTION 'Unauthorized: unauthenticated';
+    END IF;
+
+    IF public.has_role('admin', v_caller_uid) THEN
+        -- Admin can import all categories
+        NULL;
+    ELSIF public.has_role('faculty', v_caller_uid) THEN
+        IF p_category NOT IN ('Academic', 'Attendance', 'LMS', 'Engagement', 'Feedback') THEN
+            RAISE EXCEPTION 'Unauthorized: Faculty cannot import %', p_category;
+        END IF;
+    ELSIF public.has_role('placement', v_caller_uid) THEN
+        IF p_category NOT IN ('Placement', 'Skills') THEN
+            RAISE EXCEPTION 'Unauthorized: Placement cannot import %', p_category;
+        END IF;
+    ELSE
+        RAISE EXCEPTION 'Unauthorized: only authorized staff can import data';
     END IF;
 
     -- 2. Create import metadata
     INSERT INTO public.data_imports (import_hash, source_filename, category, row_count, imported_by, status)
-    VALUES (md5(p_filename || p_category || now()::text), p_filename, p_category, jsonb_array_length(p_records), v_caller_uid, 'completed')
+    VALUES (pg_catalog.md5(p_filename || p_category || pg_catalog.now()::text), p_filename, p_category, pg_catalog.jsonb_array_length(p_records), v_caller_uid, 'completed')
     RETURNING id INTO v_import_id;
 
     -- 3. Process each record atomically
-    FOR v_record IN SELECT * FROM jsonb_array_elements(p_records) LOOP
-        -- Resolve or create student
+    FOR v_record IN SELECT * FROM pg_catalog.jsonb_array_elements(p_records) LOOP
+        -- Resolve student
         SELECT id INTO v_student_id FROM public.students WHERE roll_no = v_record->>'roll_no';
         IF v_student_id IS NULL THEN
-            IF (v_record->>'name') IS NOT NULL AND (v_record->>'department') IS NOT NULL THEN
-                INSERT INTO public.students (roll_no, name, department, year)
-                VALUES (v_record->>'roll_no', v_record->>'name', v_record->>'department', COALESCE((v_record->>'year')::integer, 1))
-                RETURNING id INTO v_student_id;
-            ELSE
-                RAISE EXCEPTION 'Unknown roll_no % without name/department', v_record->>'roll_no';
-            END IF;
+            RAISE EXCEPTION 'Unknown roll_no %; student creation is restricted to authorized workflows', v_record->>'roll_no';
         END IF;
 
         -- Deterministic hash of the logical record payload for idempotency
-        v_row_hash := md5(p_category || v_student_id::text || v_record::text);
+        v_row_hash := pg_catalog.md5(p_category || v_student_id::text || v_record::text);
         v_new_id := NULL;
         v_prev_record_id := NULL;
 
@@ -373,4 +389,7 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
     RETURN jsonb_build_object('success', false, 'error', SQLERRM);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+REVOKE ALL ON FUNCTION public.import_domain_data(text, text, jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.import_domain_data(text, text, jsonb) TO authenticated;

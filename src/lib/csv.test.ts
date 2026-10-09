@@ -2,11 +2,15 @@ import { describe, it, expect } from "vitest";
 import { validate, parseCsv } from "./csv";
 
 describe("CSV validation", () => {
-  // Duplicate roll numbers are now supported across observations
-
   it("rejects files missing a required column", () => {
     const { headers, rows } = parseCsv("roll_no,x\nKR1,5\n");
     expect(validate("Attendance", headers, rows).errors[0]).toContain("Missing required column(s): date");
+  });
+
+  it("Empty roll_no rejected", () => {
+    const { headers, rows } = parseCsv("roll_no,date\n,2026-01-01\n");
+    const r = validate("Attendance", headers, rows);
+    expect(r.valid).toHaveLength(0);
   });
 
   it("Academic category validation: valid fields", () => {
@@ -38,8 +42,24 @@ describe("CSV validation", () => {
     const { headers, rows } = parseCsv("roll_no,name,department,date,percentage\nKR1,John,CSE,2026-01-01,80\n");
     const r = validate("Attendance", headers, rows);
     expect(r.valid[0].roll_no).toBe("KR1");
-    // Wait, the new `validate` function might not copy `name` and `department` automatically if we didn't add it in `out`.
-    // Let's check `out` in `csv.ts`. It doesn't copy name/department anymore? 
-    // I need to make sure `csv.ts` copies them. I will test this.
+    expect(r.valid[0].name).toBe("John");
+    expect(r.valid[0].department).toBe("CSE");
+  });
+
+  it("Boundary values: attendance percentage exactly 0 and 100 accepted", () => {
+    const r = validate("Attendance", ["roll_no", "date", "percentage"], [
+      { roll_no: "1", date: "2026-01-01", percentage: "0" }, 
+      { roll_no: "2", date: "2026-01-02", percentage: "100" }
+    ]);
+    expect(r.valid).toHaveLength(2);
+  });
+
+  it("Rejects out of range attendance percentages", () => {
+    const r = validate("Attendance", ["roll_no", "date", "percentage"], [
+      { roll_no: "1", date: "2026-01-01", percentage: "-1" }, 
+      { roll_no: "2", date: "2026-01-02", percentage: "101" }
+    ]);
+    expect(r.valid).toHaveLength(0);
+    expect(r.errors.length).toBe(2);
   });
 });
