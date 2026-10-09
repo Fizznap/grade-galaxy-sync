@@ -68,18 +68,17 @@ function Welcome() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-surface p-12 lg:flex">
+    <div className="campus-canvas grid min-h-screen lg:grid-cols-2">
+      <div className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
         <Wordmark />
         <div>
-          <div className="pattern-dots mb-10 h-40 w-full rounded-3xl opacity-70" />
+          <div className="mb-8 flex items-center gap-2 text-sm font-medium text-primary"><span className="grid size-9 place-items-center rounded-full bg-secondary">K</span> Your campus, connected</div>
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">
-            Understand.
+            KRYPTEDU
             <br />
-            <span className="text-subtle">Predict.</span>
-            <br />
-            Improve Student Success.
+            <span className="text-primary">Smart Campus<br />Analytics.</span>
           </h1>
+          <p className="mt-5 text-lg font-medium">Understand. Predict. Improve Student Success.</p>
           <p className="mt-6 max-w-md text-sm text-muted-foreground">
             One view of academics, attendance, LMS, engagement, placement and skills — with a Student Success Score and early risk signals for every learner.
           </p>
@@ -88,7 +87,7 @@ function Welcome() {
       </div>
 
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12">
-        <div className="mx-auto w-full max-w-sm">
+        <div className="rise mx-auto w-full max-w-sm">
           <Wordmark className="mb-12 lg:hidden" />
           <h2 className="text-3xl font-semibold tracking-tight">{mode === "in" ? "Welcome back" : "Create account"}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -109,9 +108,9 @@ function Welcome() {
           <Button variant="secondary" onClick={google} className="h-12 w-full rounded-xl border">
             Continue with Google
           </Button>
-          <button onClick={() => setMode(mode === "in" ? "up" : "in")} className="mt-6 w-full text-center text-sm text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" onClick={() => setMode(mode === "in" ? "up" : "in")} className="mt-6 w-full text-center text-sm text-muted-foreground hover:text-foreground">
             {mode === "in" ? "New here? Create an account" : "Already have an account? Sign in"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

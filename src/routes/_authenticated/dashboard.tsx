@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Users, BarChart3, ClipboardCheck, Database, Bell, UserCircle } from "lucide-react";
 import { Bar as RBar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { studentsQuery, interventionsQuery, avg } from "@/lib/data";
-import { Card, PageHeader, RiskBadge, SectionTitle, Stat, StudentLink } from "@/components/kr";
+import { Card, RiskBadge, SectionTitle, Stat, StudentLink } from "@/components/kr";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Home — KRYPTEDU" }, { name: "description", content: "Institutional student success overview." }, { property: "og:title", content: "Home — KRYPTEDU" }, { property: "og:description", content: "Institutional student success overview." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
@@ -14,6 +15,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const tooltipStyle = { borderRadius: 12, border: "1px solid var(--color-border)", fontSize: 12 };
+const quickAccess = [
+  { to: "/students", label: "Students", icon: Users },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/interventions", label: "Interventions", icon: ClipboardCheck },
+  { to: "/integration", label: "Import data", icon: Database },
+] as const;
 
 function Dashboard() {
   const { data: students } = useSuspenseQuery(studentsQuery);
@@ -42,7 +49,33 @@ function Dashboard() {
 
   return (
     <>
-      <PageHeader eyebrow="Institution overview" title="Student success, at a glance" />
+      <header className="mb-7 flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Your campus, connected</p>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon" className="rounded-full"><Link to="/notifications" aria-label="Notifications"><Bell className="size-4" /></Link></Button>
+          <Button asChild variant="secondary" size="icon" className="rounded-full border border-glass-border"><Link to="/profile" aria-label="Profile"><UserCircle className="size-5" /></Link></Button>
+        </div>
+      </header>
+      <div className="rise mb-6">
+        <p className="mb-2 text-xs font-medium text-primary">KRYPTEDU · CAMPUS WORKSPACE</p>
+        <h1 className="text-[28px] font-semibold leading-tight sm:text-4xl">Who needs your<br className="sm:hidden" /> attention today?</h1>
+      </div>
+      <Link to="/insights" className="press rise mb-7 flex flex-col justify-between gap-5 rounded-2xl bg-primary p-5 text-primary-foreground shadow-soft sm:flex-row sm:items-center sm:p-6">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-semibold"><span aria-hidden className="grid size-7 place-items-center rounded-full border border-primary-foreground/40">K</span> Ask KRYPTEDU</div>
+          <p className="mt-3 text-lg font-medium">A clearer picture of student success.</p>
+          <p className="mt-1 text-sm text-primary-foreground/80">Explore your cohort’s academic and placement signals.</p>
+        </div>
+        <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
+          <span className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs">{students.length} students · {depts.length} departments</span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-foreground text-primary"><ArrowRight className="size-4" /></span>
+        </div>
+      </Link>
+      <SectionTitle title="Quick access" />
+      <div className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {quickAccess.map(({ to, label, icon: Icon }) => <Link key={to} to={to} className="card-surface press flex min-w-0 items-center gap-3 p-3.5"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary"><Icon className="size-[18px]" /></span><span className="text-sm font-medium">{label}</span></Link>)}
+      </div>
+      <SectionTitle title="Campus overview" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Total students" value={students.length} hint={`${depts.length} departments`} />
         <Stat label="Avg. Success Score" value={avg(students.map((s) => s.successScore))} hint="out of 100" />
