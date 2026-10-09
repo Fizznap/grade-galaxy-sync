@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/students/")({
   head: () => ({ meta: [{ title: "Students — KRYPTEDU" }, { name: "description", content: "Student directory with success scores and risk." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(studentsQuery),
   component: Students,
-  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,
 });
 
 const RISK = ["All", "High academic", "High placement"] as const;

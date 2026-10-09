@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 function Profile() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
-  const name = (user.user_metadata?.full_name as string) || user.email?.split("@")[0];
+  const name = (user.user_metadata?.["full_name"] as string) || user.email?.split("@")[0];
   return (
     <>
       <PageHeader eyebrow="Account" title="Profile & settings" />

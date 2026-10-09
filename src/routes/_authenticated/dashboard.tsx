@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   loader: ({ context }) =>
     Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Dashboard,
-  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,
 });
 
 const tooltipStyle = { borderRadius: 12, border: "1px solid var(--color-border)", fontSize: 12 };

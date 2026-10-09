@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/integration")({
   head: () => ({ meta: [{ title: "Data Integration — KRYPTEDU" }, { name: "description", content: "Import and validate institutional data." }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(importsQuery), context.queryClient.ensureQueryData(studentsQuery)]),
   component: Integration,
-  errorComponent: ({ error }: { error: Error }) => <div role="alert" className="text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,
 });
 
 const ICONS: Record<Category, typeof Activity> = {
