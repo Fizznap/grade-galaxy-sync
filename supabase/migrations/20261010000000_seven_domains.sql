@@ -133,15 +133,15 @@ BEGIN
         SET 
             cgpa = (
                 SELECT SUM(credits * grade_points) / NULLIF(SUM(credits), 0)
-                FROM public.academic_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.academic_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.academic_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             backlogs = (
                 SELECT COUNT(*)::integer
                 FROM (
                     SELECT DISTINCT ON (subject_code) is_backlog
-                    FROM public.academic_records
-                    WHERE student_id = target_id AND supersedes_record_id IS NULL
+                    FROM public.academic_records a
+                    WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.academic_records a2 WHERE a2.supersedes_record_id = a.id)
                     ORDER BY subject_code, recorded_at DESC
                 ) latest_subjects
                 WHERE is_backlog = true
@@ -151,33 +151,33 @@ BEGIN
                     SUM(classes_attended)::numeric / NULLIF(SUM(classes_total), 0) * 100,
                     AVG(percentage)
                 )
-                FROM public.attendance_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.attendance_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.attendance_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             lms_activity = (
                 SELECT SUM(duration_minutes)::numeric
-                FROM public.lms_activity_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.lms_activity_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.lms_activity_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             engagement = (
                 SELECT SUM(points)::numeric
-                FROM public.engagement_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.engagement_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.engagement_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             placement_readiness = (
                 SELECT AVG(score / NULLIF(max_score, 0) * 100)
-                FROM public.placement_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.placement_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.placement_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             skills_score = (
                 SELECT AVG(score / NULLIF(max_score, 0) * 100)
-                FROM public.skills_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL
+                FROM public.skills_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.skills_records a2 WHERE a2.supersedes_record_id = a.id)
             ),
             feedback_score = (
                 SELECT AVG(score / NULLIF(max_score, 0) * 100)
-                FROM public.feedback_records
-                WHERE student_id = target_id AND supersedes_record_id IS NULL AND is_confidential = false
+                FROM public.feedback_records a
+                WHERE student_id = target_id AND NOT EXISTS (SELECT 1 FROM public.feedback_records a2 WHERE a2.supersedes_record_id = a.id) AND is_confidential = false
             )
         WHERE id = target_id;
     END LOOP;
@@ -316,88 +316,67 @@ BEGIN
         v_prev_record_id := NULL;
 
         IF p_category = 'Academic' THEN
-            SELECT id INTO v_prev_record_id FROM public.academic_records 
-            WHERE student_id = v_student_id AND semester = (v_record->>'semester')::integer AND subject_code = v_record->>'subject_code' AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.academic_records a1
+            WHERE student_id = v_student_id AND semester = (v_record->>'semester')::integer AND subject_code = v_record->>'subject_code' 
+            AND NOT EXISTS (SELECT 1 FROM public.academic_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.academic_records (student_id, import_id, source_record_hash, semester, subject_code, credits, grade_points, is_backlog)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'semester')::integer, v_record->>'subject_code', (v_record->>'credits')::numeric, (v_record->>'grade_points')::numeric, COALESCE((v_record->>'is_backlog')::boolean, false))
+            INSERT INTO public.academic_records (student_id, import_id, source_record_hash, supersedes_record_id, semester, subject_code, credits, grade_points, is_backlog)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'semester')::integer, v_record->>'subject_code', (v_record->>'credits')::numeric, (v_record->>'grade_points')::numeric, COALESCE((v_record->>'is_backlog')::boolean, false))
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.academic_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'Attendance' THEN
-            SELECT id INTO v_prev_record_id FROM public.attendance_records 
-            WHERE student_id = v_student_id AND date = (v_record->>'date')::date AND COALESCE(subject_code, '') = COALESCE(v_record->>'subject_code', '') AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.attendance_records a1
+            WHERE student_id = v_student_id AND date = (v_record->>'date')::date AND COALESCE(subject_code, '') = COALESCE(v_record->>'subject_code', '') 
+            AND NOT EXISTS (SELECT 1 FROM public.attendance_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.attendance_records (student_id, import_id, source_record_hash, date, subject_code, classes_total, classes_attended, percentage)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'date')::date, v_record->>'subject_code', (v_record->>'classes_total')::integer, (v_record->>'classes_attended')::integer, (v_record->>'percentage')::numeric)
+            INSERT INTO public.attendance_records (student_id, import_id, source_record_hash, supersedes_record_id, date, subject_code, classes_total, classes_attended, percentage)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'date')::date, v_record->>'subject_code', (v_record->>'classes_total')::integer, (v_record->>'classes_attended')::integer, (v_record->>'percentage')::numeric)
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.attendance_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'LMS' THEN
-            SELECT id INTO v_prev_record_id FROM public.lms_activity_records 
-            WHERE student_id = v_student_id AND date = (v_record->>'date')::date AND activity_type = v_record->>'activity_type' AND COALESCE(session_id, '') = COALESCE(v_record->>'session_id', '') AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.lms_activity_records a1
+            WHERE student_id = v_student_id AND date = (v_record->>'date')::date AND activity_type = v_record->>'activity_type' AND COALESCE(session_id, '') = COALESCE(v_record->>'session_id', '') 
+            AND NOT EXISTS (SELECT 1 FROM public.lms_activity_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.lms_activity_records (student_id, import_id, source_record_hash, date, session_id, activity_type, duration_minutes)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'date')::date, v_record->>'session_id', v_record->>'activity_type', (v_record->>'duration_minutes')::integer)
+            INSERT INTO public.lms_activity_records (student_id, import_id, source_record_hash, supersedes_record_id, date, session_id, activity_type, duration_minutes)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'date')::date, v_record->>'session_id', v_record->>'activity_type', (v_record->>'duration_minutes')::integer)
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.lms_activity_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'Engagement' THEN
-            SELECT id INTO v_prev_record_id FROM public.engagement_records 
-            WHERE student_id = v_student_id AND event_date = (v_record->>'event_date')::date AND activity_type = v_record->>'activity_type' AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.engagement_records a1
+            WHERE student_id = v_student_id AND event_date = (v_record->>'event_date')::date AND activity_type = v_record->>'activity_type' 
+            AND NOT EXISTS (SELECT 1 FROM public.engagement_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.engagement_records (student_id, import_id, source_record_hash, event_date, activity_type, points)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'event_date')::date, v_record->>'activity_type', (v_record->>'points')::integer)
+            INSERT INTO public.engagement_records (student_id, import_id, source_record_hash, supersedes_record_id, event_date, activity_type, points)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'event_date')::date, v_record->>'activity_type', (v_record->>'points')::integer)
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.engagement_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'Placement' THEN
-            SELECT id INTO v_prev_record_id FROM public.placement_records 
-            WHERE student_id = v_student_id AND assessment_date = (v_record->>'assessment_date')::date AND assessment_type = v_record->>'assessment_type' AND attempt_number = COALESCE((v_record->>'attempt_number')::integer, 1) AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.placement_records a1
+            WHERE student_id = v_student_id AND assessment_date = (v_record->>'assessment_date')::date AND assessment_type = v_record->>'assessment_type' AND attempt_number = COALESCE((v_record->>'attempt_number')::integer, 1) 
+            AND NOT EXISTS (SELECT 1 FROM public.placement_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.placement_records (student_id, import_id, source_record_hash, assessment_date, assessment_type, attempt_number, score, max_score)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'assessment_date')::date, v_record->>'assessment_type', COALESCE((v_record->>'attempt_number')::integer, 1), (v_record->>'score')::numeric, (v_record->>'max_score')::numeric)
+            INSERT INTO public.placement_records (student_id, import_id, source_record_hash, supersedes_record_id, assessment_date, assessment_type, attempt_number, score, max_score)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'assessment_date')::date, v_record->>'assessment_type', COALESCE((v_record->>'attempt_number')::integer, 1), (v_record->>'score')::numeric, (v_record->>'max_score')::numeric)
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.placement_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'Skills' THEN
-            SELECT id INTO v_prev_record_id FROM public.skills_records 
-            WHERE student_id = v_student_id AND assessment_date = (v_record->>'assessment_date')::date AND skill_name = v_record->>'skill_name' AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.skills_records a1
+            WHERE student_id = v_student_id AND assessment_date = (v_record->>'assessment_date')::date AND skill_name = v_record->>'skill_name' 
+            AND NOT EXISTS (SELECT 1 FROM public.skills_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.skills_records (student_id, import_id, source_record_hash, assessment_date, skill_name, score, max_score)
-            VALUES (v_student_id, v_import_id, v_row_hash, (v_record->>'assessment_date')::date, v_record->>'skill_name', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric)
+            INSERT INTO public.skills_records (student_id, import_id, source_record_hash, supersedes_record_id, assessment_date, skill_name, score, max_score)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, (v_record->>'assessment_date')::date, v_record->>'skill_name', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric)
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.skills_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
 
         ELSIF p_category = 'Feedback' THEN
-            SELECT id INTO v_prev_record_id FROM public.feedback_records 
-            WHERE student_id = v_student_id AND category = v_record->>'category' AND submitted_by = COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid) AND supersedes_record_id IS NULL;
+            SELECT id INTO v_prev_record_id FROM public.feedback_records a1
+            WHERE student_id = v_student_id AND category = v_record->>'category' AND submitted_by = COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid) 
+            AND NOT EXISTS (SELECT 1 FROM public.feedback_records a2 WHERE a2.supersedes_record_id = a1.id);
 
-            INSERT INTO public.feedback_records (student_id, import_id, source_record_hash, submitted_by, category, score, max_score, notes, is_confidential)
-            VALUES (v_student_id, v_import_id, v_row_hash, COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid), v_record->>'category', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric, v_record->>'notes', COALESCE((v_record->>'is_confidential')::boolean, false))
+            INSERT INTO public.feedback_records (student_id, import_id, source_record_hash, supersedes_record_id, submitted_by, category, score, max_score, notes, is_confidential)
+            VALUES (v_student_id, v_import_id, v_row_hash, v_prev_record_id, COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid), v_record->>'category', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric, v_record->>'notes', COALESCE((v_record->>'is_confidential')::boolean, false))
             ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
-
-            IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
-                UPDATE public.feedback_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;
-            END IF;
         END IF;
         
         IF v_new_id IS NOT NULL THEN
