@@ -15,6 +15,27 @@
       "when": 1791530572793,
       "tag": "0001_notification_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791538986971,
+      "tag": "0002_outcome_tracking",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791538986972,
+      "tag": "0003_rbac_fix",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791538986973,
+      "tag": "0004_student_role",
+      "breakpoints": true
     }
   ]
 }

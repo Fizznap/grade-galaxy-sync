@@ -29,6 +29,10 @@ BEGIN
 END;
 $$;
 
+-- Ensure it cannot be called from the public API
+REVOKE EXECUTE ON FUNCTION public.setup_demo_accounts() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.setup_demo_accounts() TO service_role;
+
 -- Update is_staff to exclude pending
 CREATE OR REPLACE FUNCTION public.is_staff(_user_id uuid) RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
