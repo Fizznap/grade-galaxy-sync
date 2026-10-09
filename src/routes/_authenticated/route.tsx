@@ -5,15 +5,33 @@ import { Loading } from "@/components/kr";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/" });
-    return { user: data.user };
+    const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', data.user.id).single();
+    const role = roleData?.role;
+    if (role === 'student' && (location.pathname === '/dashboard' || location.pathname === '/')) {
+      throw redirect({ to: "/student-dashboard" });
+    }
+    return { user: data.user, role };
   },
   pendingComponent: Loading,
-  component: () => (
-    <AppShell>
-      <Outlet />
-    </AppShell>
-  ),
+  component: () => {
+    const { role } = Route.useRouteContext();
+    if (role === 'pending') {
+      return (
+        <AppShell>
+          <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Account Pending Approval</h1>
+            <p>Your account is waiting for administrator approval before you can access the application.</p>
+          </div>
+        </AppShell>
+      );
+    }
+    return (
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    );
+  },
 });

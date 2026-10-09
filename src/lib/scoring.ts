@@ -31,30 +31,31 @@ export type Scored = StudentRow & {
   riskFactors: string[];
 };
 
-const clamp = (n: number) => Math.max(0, Math.min(100, n));
-const round = (n: number) => Math.round(n);
+const clamp = (num: number) => Math.max(0, Math.min(100, num));
+const round = (num: number) => Math.round(num);
+const n = (v: unknown): number => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
 
 /** Academic index: CGPA 50%, attendance 30%, LMS activity 20%, minus 5 per backlog. */
 export function academicIndex(s: StudentRow) {
   return round(
-    clamp((Number(s.cgpa) / 10) * 100 * 0.5 + s.attendance * 0.3 + s.lms_activity * 0.2 - s.backlogs * 5),
+    clamp((n(s.cgpa) / 10) * 100 * 0.5 + n(s.attendance) * 0.3 + n(s.lms_activity) * 0.2 - n(s.backlogs) * 5),
   );
 }
 
 /** Placement index: readiness 50%, skills 30%, feedback 20%. */
 export function placementIndex(s: StudentRow) {
-  return round(clamp(s.placement_readiness * 0.5 + s.skills_score * 0.3 + s.feedback_score * 0.2));
+  return round(clamp(n(s.placement_readiness) * 0.5 + n(s.skills_score) * 0.3 + n(s.feedback_score) * 0.2));
 }
 
 /** Student Success Score: academic 45%, placement 35%, engagement 20%. */
 export function successScore(s: StudentRow) {
-  return round(clamp(academicIndex(s) * 0.45 + placementIndex(s) * 0.35 + s.engagement * 0.2));
+  return round(clamp(academicIndex(s) * 0.45 + placementIndex(s) * 0.35 + n(s.engagement) * 0.2));
 }
 
 export function academicRisk(s: StudentRow): Risk {
   const a = academicIndex(s);
-  if (a < 55 || s.backlogs >= 2 || s.attendance < 60) return "High";
-  if (a < 70 || s.attendance < 75) return "Medium";
+  if (a < 55 || n(s.backlogs) >= 2 || n(s.attendance) < 60) return "High";
+  if (a < 70 || n(s.attendance) < 75) return "Medium";
   return "Low";
 }
 
@@ -73,20 +74,26 @@ export function segmentOf(s: StudentRow): Segment {
 
 export function riskFactors(s: StudentRow) {
   const f: string[] = [];
-  if (Number(s.cgpa) < 6) f.push(`Low CGPA (${s.cgpa})`);
-  if (s.attendance < 75) f.push(`Attendance below 75% (${s.attendance}%)`);
-  if (s.backlogs > 0) f.push(`${s.backlogs} active backlog${s.backlogs > 1 ? "s" : ""}`);
-  if (s.lms_activity < 45) f.push(`Low LMS activity (${s.lms_activity})`);
-  if (s.engagement < 40) f.push(`Low campus engagement (${s.engagement})`);
-  if (s.placement_readiness < 45) f.push(`Low placement readiness (${s.placement_readiness})`);
-  if (s.skills_score < 40) f.push(`Skill gaps (${s.skills_score})`);
+  if (n(s.cgpa) < 6) f.push(`Low CGPA (${n(s.cgpa)})`);
+  if (n(s.attendance) < 75) f.push(`Attendance below 75% (${n(s.attendance)}%)`);
+  if (n(s.backlogs) > 0) f.push(`${n(s.backlogs)} active backlog${n(s.backlogs) > 1 ? "s" : ""}`);
+  if (n(s.lms_activity) < 45) f.push(`Low LMS activity (${n(s.lms_activity)})`);
+  if (n(s.engagement) < 40) f.push(`Low campus engagement (${n(s.engagement)})`);
+  if (n(s.placement_readiness) < 45) f.push(`Low placement readiness (${n(s.placement_readiness)})`);
+  if (n(s.skills_score) < 40) f.push(`Skill gaps (${n(s.skills_score)})`);
   return f;
+}
+
+export function dataCompleteness(s: StudentRow): { filled: number; total: number; missing: string[] } {
+  const fields = ['cgpa', 'attendance', 'lms_activity', 'engagement', 'placement_readiness', 'skills_score', 'feedback_score'] as const;
+  const missing = fields.filter(f => !Number.isFinite(Number(s[f])) || Number(s[f]) === 0);
+  return { filled: fields.length - missing.length, total: fields.length, missing: [...missing] };
 }
 
 export function score(s: StudentRow): Scored {
   return {
     ...s,
-    cgpa: Number(s.cgpa),
+    cgpa: n(s.cgpa),
     academicIndex: academicIndex(s),
     placementIndex: placementIndex(s),
     successScore: successScore(s),

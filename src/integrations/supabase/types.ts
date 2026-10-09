@@ -132,6 +132,7 @@ export type Database = {
           skills_score: number
           updated_at: string
           year: number
+          user_id: string | null
         }
         Insert: {
           attendance?: number
@@ -149,6 +150,7 @@ export type Database = {
           skills_score?: number
           updated_at?: string
           year?: number
+          user_id?: string | null
         }
         Update: {
           attendance?: number
@@ -166,6 +168,7 @@ export type Database = {
           skills_score?: number
           updated_at?: string
           year?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -202,7 +205,7 @@ export type Database = {
       is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "faculty"
+      app_role: "admin" | "faculty" | "placement" | "pending" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -330,7 +333,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "faculty"],
+      app_role: ["admin", "faculty", "placement", "pending", "student"],
     },
   },
 } as const

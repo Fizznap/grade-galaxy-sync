@@ -43,17 +43,23 @@ function Integration() {
     const { valid, errors } = validate(cat, headers, rows);
     const known = new Map(students.map((s) => [s.roll_no, s.id]));
     let ok = 0;
-    for (const row of valid) {
-      const { roll_no, ...fields } = row;
-      if (known.has(String(roll_no))) {
-        const { error } = await supabase.from("students").update({ ...fields, updated_at: new Date().toISOString() }).eq("roll_no", String(roll_no));
-        if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
-      } else if (fields["name"] && fields["department"]) {
-        const { error } = await supabase.from("students").insert({ roll_no: String(roll_no), ...fields } as never);
-        if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
-      } else {
-        errors.push(`${roll_no}: unknown roll number (add name and department columns to create new students)`);
-      }
+    const batchSize = 50;
+    for (let i = 0; i < valid.length; i += batchSize) {
+      const batch = valid.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map(async (row) => {
+          const { roll_no, ...fields } = row;
+          if (known.has(String(roll_no))) {
+            const { error } = await supabase.from("students").update({ ...fields, updated_at: new Date().toISOString() }).eq("roll_no", String(roll_no));
+            if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
+          } else if (fields["name"] && fields["department"]) {
+            const { error } = await supabase.from("students").insert({ roll_no: String(roll_no), ...fields } as never);
+            if (error) errors.push(`${roll_no}: ${error.message}`); else ok++;
+          } else {
+            errors.push(`${roll_no}: unknown roll number (add name and department columns to create new students)`);
+          }
+        })
+      );
     }
     const { data: u } = await supabase.auth.getUser();
     await supabase.from("data_imports").insert({

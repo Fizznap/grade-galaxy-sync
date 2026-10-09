@@ -13,14 +13,22 @@ const RANGE: Record<string, [number, number]> = {
   placement_readiness: [0, 100], skills_score: [0, 100], feedback_score: [0, 100], year: [1, 6],
 };
 
+import Papa from "papaparse";
+
 export function parseCsv(text: string) {
-  const lines = text.replace(/\r/g, "").split("\n").filter((l) => l.trim());
-  if (lines.length < 2) return { headers: [] as string[], rows: [] as Record<string, string>[] };
-  const headers = (lines[0] ?? "").split(",").map((h) => h.trim().toLowerCase());
-  const rows = lines.slice(1).map((l) => {
-    const cells = l.split(",").map((c) => c.trim());
-    return Object.fromEntries(headers.map((h, i) => [h, cells[i] ?? ""]));
+  const parsed = Papa.parse<Record<string, string>>(text.trim(), {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim().toLowerCase(),
   });
+  
+  if (!parsed.data.length || !parsed.meta.fields) {
+    return { headers: [] as string[], rows: [] as Record<string, string>[] };
+  }
+  
+  const headers = parsed.meta.fields;
+  const rows = parsed.data;
+  
   return { headers, rows };
 }
 
