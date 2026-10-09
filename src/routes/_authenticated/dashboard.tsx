@@ -57,7 +57,7 @@ function Dashboard() {
         </div>
       </header>
       <div className="rise mb-6">
-        <p className="mb-2 text-xs font-medium text-primary">KRYPTEDU · CAMPUS WORKSPACE</p>
+        <p className="mb-2 text-xs font-medium text-primary-deep">KRYPTEDU · CAMPUS WORKSPACE</p>
         <h1 className="text-[28px] font-semibold leading-tight sm:text-4xl">Who needs your<br className="sm:hidden" /> attention today?</h1>
       </div>
       <Link to="/insights" className="press rise mb-7 flex flex-col justify-between gap-5 rounded-2xl bg-primary p-5 text-primary-foreground shadow-soft sm:flex-row sm:items-center sm:p-6">
@@ -68,12 +68,12 @@ function Dashboard() {
         </div>
         <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
           <span className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs">{students.length} students · {depts.length} departments</span>
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-foreground text-primary"><ArrowRight className="size-4" /></span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-foreground text-primary-deep"><ArrowRight className="size-4" /></span>
         </div>
       </Link>
       <SectionTitle title="Quick access" />
       <div className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {quickAccess.map(({ to, label, icon: Icon }) => <Link key={to} to={to} className="card-surface press flex min-w-0 items-center gap-3 p-3.5"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary"><Icon className="size-[18px]" /></span><span className="text-sm font-medium">{label}</span></Link>)}
+        {quickAccess.map(({ to, label, icon: Icon }) => <Link key={to} to={to} className="card-surface press flex min-w-0 items-center gap-3 p-3.5"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary-deep"><Icon className="size-[18px]" /></span><span className="text-sm font-medium">{label}</span></Link>)}
       </div>
       <SectionTitle title="Campus overview" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

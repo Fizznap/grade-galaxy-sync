@@ -72,11 +72,11 @@ function Welcome() {
       <div className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
         <Wordmark />
         <div>
-          <div className="mb-8 flex items-center gap-2 text-sm font-medium text-primary"><span className="grid size-9 place-items-center rounded-full bg-secondary">K</span> Your campus, connected</div>
+          <div className="mb-8 flex items-center gap-2 text-sm font-medium text-primary-deep"><span className="grid size-9 place-items-center rounded-full bg-secondary">K</span> Your campus, connected</div>
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">
             KRYPTEDU
             <br />
-            <span className="text-primary">Smart Campus<br />Analytics.</span>
+            <span className="text-primary-deep">Smart Campus<br />Analytics.</span>
           </h1>
           <p className="mt-5 text-lg font-medium">Understand. Predict. Improve Student Success.</p>
           <p className="mt-6 max-w-md text-sm text-muted-foreground">

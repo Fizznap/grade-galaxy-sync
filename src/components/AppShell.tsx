@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="liquid-glass sticky top-0 z-20 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <Wordmark />
         <div className="flex items-center gap-2">
-          <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border border-border bg-secondary/70 text-primary transition-colors hover:bg-selected">
+          <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border border-border bg-secondary/70 text-primary-deep transition-colors hover:bg-selected">
             <Bell className="size-4" strokeWidth={1.6} />
           </Link>
           <ProfileIdButton />
@@ -75,7 +75,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "press flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-medium transition-colors",
-                active ? "text-primary" : "text-subtle hover:bg-secondary",
+                active ? "text-primary-deep" : "text-subtle hover:bg-secondary",
               )}
             >
               <Icon className="size-5" strokeWidth={active ? 2 : 1.6} />
@@ -96,7 +96,7 @@ function NavItem({ to, label, icon: Icon, active }: { to: string; label: string;
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-        active ? "bg-primary font-medium text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-secondary hover:text-primary",
+        active ? "bg-primary font-medium text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-secondary hover:text-primary-deep",
       )}
     >
       <Icon className="size-[18px]" strokeWidth={1.6} />

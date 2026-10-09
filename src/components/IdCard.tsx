@@ -42,7 +42,7 @@ export function IdCard({ className }: { className?: string }) {
           <dt className="text-subtle">ID No.</dt><dd className="font-mono font-medium">{idNo}</dd>
           <dt className="text-subtle">Member since</dt><dd className="font-medium">{since}</dd>
         </dl>
-        <QrCode className="size-12 text-primary" strokeWidth={1.3} aria-hidden />
+        <QrCode className="size-12 text-primary-deep" strokeWidth={1.3} aria-hidden />
       </div>
     </div>
   );
