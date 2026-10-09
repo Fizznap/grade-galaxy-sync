@@ -13,7 +13,7 @@ export function Wordmark({ className }: { className?: string }) {
         </svg>
       </div>
       <div className="leading-none">
-        <div className="text-[15px] font-bold tracking-[0.14em] text-primary">KRYPTEDU</div>
+        <div className="text-[15px] font-bold tracking-[0.14em] text-foreground">KRYPTEDU</div>
         <div className="mt-0.5 text-[10px] uppercase tracking-wider text-subtle">Smart Campus Analytics</div>
       </div>
     </div>
@@ -24,7 +24,7 @@ export function PageHeader({ eyebrow, title, action }: { eyebrow?: string; title
   return (
     <div className="mb-6 flex items-end justify-between gap-4">
       <div>
-        {eyebrow && <div className="text-xs font-medium uppercase tracking-wider text-primary">{eyebrow}</div>}
+        {eyebrow && <div className="text-xs font-medium uppercase tracking-wider text-primary-deep">{eyebrow}</div>}
         <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
       </div>
       {action}

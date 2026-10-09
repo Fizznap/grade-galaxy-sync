@@ -26,13 +26,13 @@ function More() {
       <div className="card-surface divide-y overflow-hidden">
         {items.map(({ to, label, desc, icon: Icon }) => (
           <Link key={label} to={to} className="group flex items-center gap-4 px-5 py-5 transition-colors hover:bg-secondary/70">
-            <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-secondary/70 text-primary"><Icon className="size-[20px]" strokeWidth={1.6} /></div>
+            <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-secondary/70 text-primary-deep"><Icon className="size-[20px]" strokeWidth={1.6} /></div>
             <div className="flex-1"><div className="text-sm font-medium">{label}</div><div className="text-xs text-subtle">{desc}</div></div>
             <ChevronRight className="size-4 shrink-0 text-subtle transition-transform group-hover:translate-x-1" />
           </Link>
         ))}
         <a href="mailto:support@kryptedu.app" className="flex items-center gap-4 px-4 py-4 hover:bg-surface">
-          <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-secondary/70 text-primary"><HelpCircle className="size-[18px]" strokeWidth={1.6} /></div>
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-secondary/70 text-primary-deep"><HelpCircle className="size-[18px]" strokeWidth={1.6} /></div>
           <div className="flex-1"><div className="text-sm font-medium">Help and Support</div><div className="text-xs text-subtle">Contact the KRYPTEDU team</div></div>
           <ChevronRight className="size-4 text-subtle" />
         </a>
