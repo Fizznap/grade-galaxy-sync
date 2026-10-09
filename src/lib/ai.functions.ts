@@ -17,7 +17,10 @@ export const askInsights = createServerFn({ method: "POST" })
     const table = scored
       .map((s) => `${s.roll_no}|${s.name}|${s.department}|Y${s.year}|CGPA ${s.cgpa}|Att ${s.attendance}|LMS ${s.lms_activity}|Eng ${s.engagement}|Plc ${s.placement_readiness}|Skl ${s.skills_score}|Backlogs ${s.backlogs}|Success ${s.successScore}|AcadRisk ${s.academicRisk}|PlcRisk ${s.placementRisk}|${s.segment}`)
       .join("\n");
-    const system = `You are the KRYPTEDU AI Insights assistant for campus leadership. Answer only from the institutional data below. Be concise and structured: start with a one-line answer, then short bullet points with evidence (names, roll numbers, numbers). Suggest concrete interventions when relevant. Use markdown sparingly (bold, bullets). Data:\n${table}`;
+    const tally = (k: (s: (typeof scored)[number]) => string) =>
+      Object.entries(scored.reduce<Record<string, number>>((a, s) => { a[k(s)] = (a[k(s)] ?? 0) + 1; return a; }, {})).map(([n, c]) => `${n}: ${c}`).join(", ");
+    const facts = `Exact counts (use these for any "how many" question): total ${scored.length}; by department — ${tally((s) => s.department)}; by year — ${tally((s) => `Y${s.year}`)}; academic risk — ${tally((s) => s.academicRisk)}; placement risk — ${tally((s) => s.placementRisk)}.`;
+    const system = `You are the KRYPTEDU AI Insights assistant for campus leadership. Answer only from the institutional data below. Be concise and structured: start with a one-line answer, then short bullet points with evidence (names, roll numbers, numbers). Suggest concrete interventions when relevant. Use markdown sparingly (bold, bullets). ${facts}\nData:\n${table}`;
 
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { reply: "", error: "AI is not configured." };
