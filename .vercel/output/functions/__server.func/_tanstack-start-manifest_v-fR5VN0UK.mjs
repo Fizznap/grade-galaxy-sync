@@ -1,4 +1,4 @@
-//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-CKtCi9DR.js
+//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-fR5VN0UK.js
 var tsrStartManifest = () => ({ routes: {
 	__root__: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/__root.tsx",
@@ -8,7 +8,7 @@ var tsrStartManifest = () => ({ routes: {
 			"/reset-password"
 		],
 		preloads: [
-			"/assets/index-BywwoJXZ.js",
+			"/assets/index-BYMMzIBb.js",
 			"/assets/jsx-runtime-Cx0BB4qO.js",
 			"/assets/react-IDFlRUvQ.js",
 			"/assets/react-dom-CMgJEpnG.js",
@@ -24,14 +24,14 @@ var tsrStartManifest = () => ({ routes: {
 		scripts: [{ attrs: {
 			type: "module",
 			async: !0,
-			src: "/assets/index-BywwoJXZ.js"
+			src: "/assets/index-BYMMzIBb.js"
 		} }]
 	},
 	"/": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/index.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/routes-DcUMx4sn.js",
+			"/assets/routes-CkXoy1yh.js",
 			"/assets/useNavigate-DFswLL3J.js",
 			"/assets/createLucideIcon-CzhjP633.js",
 			"/assets/arrow-right-gB1C68k1.js",
@@ -57,7 +57,7 @@ var tsrStartManifest = () => ({ routes: {
 			"/_authenticated/students/"
 		],
 		preloads: [
-			"/assets/route-gjn6Es_r.js",
+			"/assets/route-Dko2FglX.js",
 			"/assets/createLucideIcon-CzhjP633.js",
 			"/assets/users-CYSYvvRO.js",
 			"/assets/database-BtccLpD8.js",
@@ -70,7 +70,7 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/reset-password.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/reset-password-DFgvFtcx.js",
+			"/assets/reset-password-Bpl-J-4-.js",
 			"/assets/useNavigate-DFswLL3J.js",
 			"/assets/input-qbZky5du.js"
 		]
@@ -78,13 +78,13 @@ var tsrStartManifest = () => ({ routes: {
 	"/_authenticated/admin": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/admin.tsx",
 		children: void 0,
-		preloads: ["/assets/admin-ClfTnrS2.js", "/assets/useMutation-hc18ZRVx.js"]
+		preloads: ["/assets/admin-CMr-xBNr.js", "/assets/useMutation-CFr9UD5c.js"]
 	},
 	"/_authenticated/dashboard": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/dashboard.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/dashboard-CXuWmyAl.js",
+			"/assets/dashboard-CMnkKCel.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
 			"/assets/arrow-right-gB1C68k1.js",
 			"/assets/dashboard-MGiD_wu_.js"
@@ -94,7 +94,7 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/data.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/data-DnCXWzd2.js",
+			"/assets/data-CDOHW3AD.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
 			"/assets/circle-alert-CfDC2KI8.js",
 			"/assets/data-MGiD_wu_.js"
@@ -103,15 +103,15 @@ var tsrStartManifest = () => ({ routes: {
 	"/_authenticated/insights": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/insights.tsx",
 		children: void 0,
-		preloads: ["/assets/insights-Dj3pIZiM.js", "/assets/ai.functions-Csih98Uf.js"]
+		preloads: ["/assets/insights-C2F2C7nm.js", "/assets/ai.functions-B_2-nRSk.js"]
 	},
 	"/_authenticated/interventions": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/interventions.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/interventions-CM_AUtpW.js",
+			"/assets/interventions-BmGzuR5v.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
-			"/assets/InterventionForm-CdQDLDI8.js",
+			"/assets/InterventionForm-B-za8pYB.js",
 			"/assets/interventions-MGiD_wu_.js"
 		]
 	},
@@ -119,7 +119,7 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/more.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/more-DxfgN0Xw.js",
+			"/assets/more-D6GVXltF.js",
 			"/assets/useNavigate-DFswLL3J.js",
 			"/assets/log-out-reXG-6Ym.js"
 		]
@@ -128,7 +128,7 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/notifications.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/notifications-DgC6mGXQ.js",
+			"/assets/notifications-jvhM4tJy.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
 			"/assets/circle-alert-CfDC2KI8.js"
 		]
@@ -137,7 +137,7 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/profile.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/profile-BDxXOEbU.js",
+			"/assets/profile-DUHvAEdD.js",
 			"/assets/useNavigate-DFswLL3J.js",
 			"/assets/log-out-reXG-6Ym.js"
 		]
@@ -145,15 +145,15 @@ var tsrStartManifest = () => ({ routes: {
 	"/_authenticated/reports": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/reports.tsx",
 		children: void 0,
-		preloads: ["/assets/reports-Cu1JyrkX.js", "/assets/useSuspenseQuery-BqI9lVyR.js"]
+		preloads: ["/assets/reports-zm833ZzT.js", "/assets/useSuspenseQuery-BqI9lVyR.js"]
 	},
 	"/_authenticated/student-dashboard": {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/student-dashboard.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/student-dashboard-c8OosQ0b.js",
-			"/assets/ai.functions-Csih98Uf.js",
-			"/assets/useMutation-hc18ZRVx.js",
+			"/assets/student-dashboard-BfKKEJpe.js",
+			"/assets/ai.functions-B_2-nRSk.js",
+			"/assets/useMutation-CFr9UD5c.js",
 			"/assets/scoring-CCVz1_uF.js",
 			"/assets/input-qbZky5du.js",
 			"/assets/dist-EfUh_PkL.js"
@@ -163,10 +163,10 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/students.$id.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/students._id-BAXVmrFk.js",
+			"/assets/students._id-BwWYOgPg.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
-			"/assets/InterventionForm-CdQDLDI8.js",
-			"/assets/students._id-BDUGxGKv.js",
+			"/assets/InterventionForm-B-za8pYB.js",
+			"/assets/students._id-CeUnzVps.js",
 			"/assets/students._id-MGiD_wu_.js"
 		]
 	},
@@ -174,11 +174,11 @@ var tsrStartManifest = () => ({ routes: {
 		filePath: "C:/Users/PINGTAP/Downloads/KRYPTEDU/grade-galaxy-sync/src/routes/_authenticated/students.index.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/students.index-MGiD_wu_.js",
-			"/assets/students.index-nZVL3cYh.js",
+			"/assets/students.index-BrygwIGP.js",
 			"/assets/useSuspenseQuery-BqI9lVyR.js",
 			"/assets/x-VX_KMYv5.js",
-			"/assets/input-qbZky5du.js"
+			"/assets/input-qbZky5du.js",
+			"/assets/students.index-MGiD_wu_.js"
 		]
 	}
 } });

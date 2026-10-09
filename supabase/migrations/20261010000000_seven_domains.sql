@@ -14,7 +14,7 @@ CREATE TABLE public.academic_records (
     semester integer NOT NULL,
     subject_code text NOT NULL,
     credits numeric NOT NULL CHECK (credits > 0),
-    grade_points numeric NOT NULL CHECK (grade_points >= 0),
+    grade_points numeric NOT NULL CHECK (grade_points BETWEEN 0 AND 10),
     is_backlog boolean NOT NULL DEFAULT false,
     recorded_at timestamptz NOT NULL DEFAULT now()
 );
@@ -94,6 +94,9 @@ CREATE TABLE public.skills_records (
 CREATE TABLE public.feedback_records (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
+    import_id uuid REFERENCES public.data_imports(id) ON DELETE SET NULL,
+    source_record_hash text UNIQUE NOT NULL,
+    supersedes_record_id uuid REFERENCES public.feedback_records(id) ON DELETE SET NULL,
     submitted_by uuid REFERENCES auth.users(id) NOT NULL,
     category text NOT NULL CHECK (category IN ('student_satisfaction', 'faculty_feedback', 'peer_review', 'advisor_note')),
     score numeric CHECK (score >= 0),
@@ -114,65 +117,70 @@ CREATE TABLE public.feedback_records (
 CREATE OR REPLACE FUNCTION public.update_student_cache()
 RETURNS TRIGGER AS $$
 DECLARE
-    target_student_id uuid;
+    target_ids uuid[];
+    target_id uuid;
 BEGIN
     IF TG_OP = 'DELETE' THEN
-        target_student_id := OLD.student_id;
+        target_ids := ARRAY[OLD.student_id];
+    ELSIF TG_OP = 'UPDATE' AND OLD.student_id != NEW.student_id THEN
+        target_ids := ARRAY[OLD.student_id, NEW.student_id];
     ELSE
-        target_student_id := NEW.student_id;
+        target_ids := ARRAY[NEW.student_id];
     END IF;
 
-    UPDATE public.students s
-    SET 
-        cgpa = (
-            SELECT SUM(credits * grade_points) / NULLIF(SUM(credits), 0)
-            FROM public.academic_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        backlogs = (
-            SELECT COUNT(*)::integer
-            FROM (
-                SELECT DISTINCT ON (subject_code) is_backlog
+    FOR target_id IN SELECT unnest(target_ids) LOOP
+        UPDATE public.students s
+        SET 
+            cgpa = (
+                SELECT SUM(credits * grade_points) / NULLIF(SUM(credits), 0)
                 FROM public.academic_records
-                WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-                ORDER BY subject_code, recorded_at DESC
-            ) latest_subjects
-            WHERE is_backlog = true
-        ),
-        attendance = (
-            SELECT COALESCE(
-                SUM(classes_attended)::numeric / NULLIF(SUM(classes_total), 0) * 100,
-                AVG(percentage)
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            backlogs = (
+                SELECT COUNT(*)::integer
+                FROM (
+                    SELECT DISTINCT ON (subject_code) is_backlog
+                    FROM public.academic_records
+                    WHERE student_id = target_id AND supersedes_record_id IS NULL
+                    ORDER BY subject_code, recorded_at DESC
+                ) latest_subjects
+                WHERE is_backlog = true
+            ),
+            attendance = (
+                SELECT COALESCE(
+                    SUM(classes_attended)::numeric / NULLIF(SUM(classes_total), 0) * 100,
+                    AVG(percentage)
+                )
+                FROM public.attendance_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            lms_activity = (
+                SELECT SUM(duration_minutes)::numeric
+                FROM public.lms_activity_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            engagement = (
+                SELECT SUM(points)::numeric
+                FROM public.engagement_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            placement_readiness = (
+                SELECT AVG(score / NULLIF(max_score, 0) * 100)
+                FROM public.placement_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            skills_score = (
+                SELECT AVG(score / NULLIF(max_score, 0) * 100)
+                FROM public.skills_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL
+            ),
+            feedback_score = (
+                SELECT AVG(score / NULLIF(max_score, 0) * 100)
+                FROM public.feedback_records
+                WHERE student_id = target_id AND supersedes_record_id IS NULL AND is_confidential = false
             )
-            FROM public.attendance_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        lms_activity = (
-            SELECT SUM(duration_minutes)::numeric
-            FROM public.lms_activity_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        engagement = (
-            SELECT SUM(points)::numeric
-            FROM public.engagement_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        placement_readiness = (
-            SELECT AVG(score / NULLIF(max_score, 0) * 100)
-            FROM public.placement_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        skills_score = (
-            SELECT AVG(score / NULLIF(max_score, 0) * 100)
-            FROM public.skills_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL
-        ),
-        feedback_score = (
-            SELECT AVG(score / NULLIF(max_score, 0) * 100)
-            FROM public.feedback_records
-            WHERE student_id = target_student_id AND supersedes_record_id IS NULL AND is_confidential = false
-        )
-    WHERE id = target_student_id;
+        WHERE id = target_id;
+    END LOOP;
 
     RETURN NULL;
 END;
@@ -218,21 +226,33 @@ CREATE POLICY "Staff select imports" ON public.data_imports FOR SELECT TO authen
 DO $$ 
 DECLARE
     tbl text;
+    allowed_role text;
 BEGIN
     FOR tbl IN SELECT unnest(ARRAY[
         'academic_records', 'attendance_records', 'lms_activity_records', 
         'engagement_records', 'placement_records', 'skills_records'
     ]) LOOP
+        -- Define which role accesses which domain
+        IF tbl IN ('academic_records', 'attendance_records', 'lms_activity_records', 'engagement_records') THEN
+            allowed_role := 'faculty';
+        ELSE
+            allowed_role := 'placement';
+        END IF;
+
         EXECUTE format('CREATE POLICY "Admin %I" ON public.%I FOR ALL TO authenticated USING (public.has_role(''admin'', auth.uid())) WITH CHECK (public.has_role(''admin'', auth.uid()));', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Staff %I" ON public.%I FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Staff %I" ON public.%I FOR SELECT TO authenticated USING (public.has_role(%L, auth.uid()));', tbl, tbl, allowed_role);
         EXECUTE format('CREATE POLICY "Student %I" ON public.%I FOR SELECT TO authenticated USING (public.has_role(''student'', auth.uid()) AND student_id IN (SELECT id FROM public.students WHERE user_id = auth.uid()));', tbl, tbl);
     END LOOP;
 END $$;
 
 -- Feedback RLS
 CREATE POLICY "Admin feedback" ON public.feedback_records FOR ALL TO authenticated USING (public.has_role('admin', auth.uid())) WITH CHECK (public.has_role('admin', auth.uid()));
-CREATE POLICY "Staff select feedback" ON public.feedback_records FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
-CREATE POLICY "Staff insert feedback" ON public.feedback_records FOR INSERT TO authenticated USING (public.is_staff(auth.uid())) WITH CHECK (public.is_staff(auth.uid()));
+CREATE POLICY "Staff select feedback" ON public.feedback_records FOR SELECT TO authenticated USING (
+    (public.has_role('faculty', auth.uid()) AND is_confidential = false) OR 
+    submitted_by = auth.uid() OR
+    public.has_role('admin', auth.uid())
+);
+CREATE POLICY "Staff insert feedback" ON public.feedback_records FOR INSERT TO authenticated WITH CHECK (public.has_role('faculty', auth.uid()) OR public.has_role('admin', auth.uid()));
 CREATE POLICY "Student view feedback" ON public.feedback_records FOR SELECT TO authenticated USING (
     public.has_role('student', auth.uid()) AND 
     student_id IN (SELECT id FROM public.students WHERE user_id = auth.uid()) AND
@@ -371,9 +391,9 @@ BEGIN
             SELECT id INTO v_prev_record_id FROM public.feedback_records 
             WHERE student_id = v_student_id AND category = v_record->>'category' AND submitted_by = COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid) AND supersedes_record_id IS NULL;
 
-            INSERT INTO public.feedback_records (student_id, submitted_by, category, score, max_score, notes, is_confidential)
-            VALUES (v_student_id, COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid), v_record->>'category', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric, v_record->>'notes', COALESCE((v_record->>'is_confidential')::boolean, false))
-            RETURNING id INTO v_new_id; -- Note: Feedback might not deduplicate on hash since notes change frequently, but let's keep it simple
+            INSERT INTO public.feedback_records (student_id, import_id, source_record_hash, submitted_by, category, score, max_score, notes, is_confidential)
+            VALUES (v_student_id, v_import_id, v_row_hash, COALESCE((v_record->>'submitted_by')::uuid, v_caller_uid), v_record->>'category', (v_record->>'score')::numeric, (v_record->>'max_score')::numeric, v_record->>'notes', COALESCE((v_record->>'is_confidential')::boolean, false))
+            ON CONFLICT (source_record_hash) DO NOTHING RETURNING id INTO v_new_id;
 
             IF v_new_id IS NOT NULL AND v_prev_record_id IS NOT NULL THEN
                 UPDATE public.feedback_records SET supersedes_record_id = v_new_id WHERE id = v_prev_record_id;

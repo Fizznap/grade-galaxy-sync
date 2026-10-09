@@ -9,7 +9,7 @@ import { i as studentsQuery, n as importsQuery } from "./data-C0Xm0G2z.mjs";
 import { B as Briefcase, M as CircleCheck, N as CircleAlert, V as BookOpen, a as TriangleAlert, i as Upload, q as Activity, s as Star, x as GraduationCap, z as CalendarCheck } from "../_libs/lucide-react.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
 import { t as require_papaparse } from "../_libs/papaparse.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/data-CBhQwcQL.js
+//#region node_modules/.nitro/vite/services/ssr/assets/data-4BqDOMY8.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var import_papaparse = /* @__PURE__ */ __toESM(require_papaparse());
@@ -72,6 +72,9 @@ function validate(category, headers, rows) {
 			return;
 		}
 		const out = { roll_no: roll };
+		if (r["name"]) out.name = r["name"];
+		if (r["department"]) out.department = r["department"];
+		if (r["year"]) out.year = Number(r["year"]) || 1;
 		let hasError = false;
 		const parseNum = (field, min, max, allowEmpty = true) => {
 			if (!(field in r) || r[field] === "") {
@@ -225,30 +228,10 @@ function Integration() {
 		try {
 			const { headers, rows } = parseCsv(await file.text());
 			const { valid, errors } = validate(cat, headers, rows);
-			const known = new Map(students.map((s) => [s.roll_no, s.id]));
+			new Map(students.map((s) => [s.roll_no, s.id]));
 			let ok = 0;
 			const toImport = [];
-			for (const row of valid) {
-				const { roll_no, name, department, year, ...domainFields } = row;
-				let student_id = known.get(String(roll_no));
-				if (!student_id && name && department) {
-					const { data: res, error: err } = await supabase.from("students").insert({
-						roll_no: String(roll_no),
-						name: String(name),
-						department: String(department),
-						year: Number(year) || 1
-					}).select("id").single();
-					if (res) {
-						student_id = res.id;
-						known.set(String(roll_no), student_id);
-					} else if (err) errors.push(`Row for roll_no ${roll_no} failed student creation: ${err.message}`);
-				}
-				if (student_id) toImport.push({
-					student_id,
-					...domainFields
-				});
-				else errors.push(`Row for roll_no ${roll_no} skipped: unknown student and missing name/department`);
-			}
+			for (const row of valid) toImport.push(row);
 			if (toImport.length > 0) {
 				const importHash = crypto.randomUUID();
 				const { data: rpcData, error: rpcError } = await supabase.rpc("import_domain_data", {
@@ -259,7 +242,10 @@ function Integration() {
 				});
 				if (rpcError) errors.push(`Transaction failed: ${rpcError.message}. (Ensure migration has been applied).`);
 				else if (rpcData && rpcData.success === false) errors.push(`Database error: ${rpcData.error}`);
-				else ok = toImport.length;
+				else {
+					ok = rpcData.rows_inserted || 0;
+					if (ok < toImport.length) errors.push(`Skipped ${toImport.length - ok} exact duplicate or superseded records.`);
+				}
 			}
 			setResult({
 				ok,

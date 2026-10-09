@@ -10,7 +10,7 @@ import { i as studentsQuery, n as importsQuery, r as interventionsQuery } from "
 import { t as Toaster } from "../_libs/sonner.mjs";
 import { t as Route$16 } from "./route-3ilExJ88.mjs";
 import { t as Route$17 } from "./students._id-DAjT8PPv.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-VY6exZrx.js
+//#region node_modules/.nitro/vite/services/ssr/assets/router-BF3Q2dbP.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var Toaster$1 = ({ ...props }) => {
@@ -281,7 +281,7 @@ var Route$10 = createFileRoute("/_authenticated/dashboard")({
 	errorComponent: lazyRouteComponent($$splitErrorComponentImporter$3, "errorComponent")
 });
 var $$splitErrorComponentImporter$2 = () => import("./data-BLxIKuKN.mjs");
-var $$splitComponentImporter$8 = () => import("./data-CBhQwcQL.mjs");
+var $$splitComponentImporter$8 = () => import("./data-4BqDOMY8.mjs");
 var Route$9 = createFileRoute("/_authenticated/data")({
 	head: () => ({ meta: [{ title: "Data Integration — KRYPTEDU" }, {
 		name: "description",
