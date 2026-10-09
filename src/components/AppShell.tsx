@@ -60,7 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      {!isActive("/insights") && <Link to="/insights" className="press fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-soft lg:hidden"><span aria-hidden className="grid size-5 place-items-center rounded-full border border-primary-foreground/40 text-xs font-semibold">K</span> Ask KRYPTEDU <ArrowUpRight className="size-4" /></Link>}
+      {!isActive("/insights") && <Link to="/insights" className="press fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-soft lg:hidden"><span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full border border-primary-foreground/40 text-xs font-semibold">K</span> Ask KRYPTEDU <ArrowUpRight className="size-4 shrink-0" /></Link>}
 
       <nav aria-label="Main navigation" className="liquid-glass fixed inset-x-0 bottom-4 z-30 mx-auto flex w-[calc(100%-2rem)] max-w-md justify-between rounded-3xl border p-2 lg:hidden">
         {primary.map(({ to, label, icon: Icon }) => {
