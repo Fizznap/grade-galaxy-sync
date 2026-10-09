@@ -43,6 +43,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+  // A stale page after the preview restarts can't fetch its old code chunks; reload once to recover.
+  useEffect(() => {
+    const msg = String((error as Error)?.message ?? "");
+    if (!/dynamically imported module|Importing a module script failed/i.test(msg)) return;
+    if (sessionStorage.getItem("kr-chunk-reload")) return;
+    sessionStorage.setItem("kr-chunk-reload", "1");
+    window.location.reload();
+  }, [error]);
+  useEffect(() => {
+    const t = setTimeout(() => sessionStorage.removeItem("kr-chunk-reload"), 10000);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
