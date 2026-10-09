@@ -18,7 +18,7 @@ const SUGGESTIONS = [
   "Suggest interventions for attendance risk",
 ];
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; failed?: boolean };
 
 function render(text: string) {
   return text.split("\n").map((line, i) => {
@@ -43,8 +43,8 @@ function Insights() {
     setInput("");
     setBusy(true);
     try {
-      const r = await ask({ data: { messages: next } });
-      setMsgs([...next, { role: "assistant", content: r.error ?? r.reply }]);
+      const r = await ask({ data: { messages: next.map(({ role, content }) => ({ role, content })) } });
+      setMsgs([...next, { role: "assistant", content: r.error ?? r.reply, ...(r.error ? { failed: true } : {}) }]);
     } catch {
       setMsgs([...next, { role: "assistant", content: "The assistant is unavailable right now.", failed: true }]);
     } finally {

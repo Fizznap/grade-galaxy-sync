@@ -91,7 +91,7 @@ function Profile() {
           )}
         </Card>
         <Card>
-          <SectionTitle title="Interventions" />
+          <SectionTitle title="Interventions" action={<Link to="/interventions" className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</Link>} />
           {mine.length === 0 ? <div className="text-sm text-muted-foreground">None yet.</div> : (
             <ul className="space-y-2">{mine.map((i) => <li key={i.id} className="text-sm"><div className="font-medium">{i.title}</div><div className="text-xs text-subtle">{i.status} · {i.priority} priority</div></li>)}</ul>
           )}
