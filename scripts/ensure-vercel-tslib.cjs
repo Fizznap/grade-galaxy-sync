@@ -45,33 +45,43 @@ if (!fs.existsSync(libsDir)) {
   process.exit(1);
 }
 
-const testFile = path.join(libsDir, '__test_resolution.mjs');
-try {
-  // We write an MJS script to test import.meta.resolve
-  fs.writeFileSync(testFile, `
-try {
-  const resolved = import.meta.resolve('tslib');
-  console.log(resolved);
-} catch (e) {
-  console.error(e.message);
-  process.exit(1);
-}
-  `);
-  
-  const stdout = execSync(`node ${testFile}`, { encoding: 'utf-8' });
-  if (!stdout.includes('node_modules/tslib')) {
-    console.error('[Error] Resolution resolved to unexpected path:', stdout);
-    process.exit(1);
-  }
-  
-  console.log(`Successfully verified ESM resolution of tslib from _libs chunk! resolved path: ${stdout.trim()}`);
-} catch (err) {
-  console.error('[Error] Failed to resolve tslib from chunk:', err.stdout || err.message);
-  process.exit(1);
-} finally {
-  if (fs.existsSync(testFile)) {
-    fs.unlinkSync(testFile);
+// 7. Rewrite tslib imports in all generated chunks to use the explicit relative path
+function rewriteImports(dir, relativeToNodeModules) {
+  if (!fs.existsSync(dir)) return;
+  const files = fs.readdirSync(dir);
+  for (const f of files) {
+    const fullPath = path.join(dir, f);
+    if (fs.statSync(fullPath).isDirectory()) {
+      rewriteImports(fullPath, '../' + relativeToNodeModules);
+    } else if (f.endsWith('.mjs') || f.endsWith('.js')) {
+      let content = fs.readFileSync(fullPath, 'utf-8');
+      const importRegex = /from\s+['"]tslib['"]/g;
+      if (importRegex.test(content)) {
+        content = content.replace(importRegex, `from "${relativeToNodeModules}/tslib/modules/index.js"`);
+        fs.writeFileSync(fullPath, content);
+        console.log(`Rewrote tslib import in ${path.relative(vercelFuncDir, fullPath)}`);
+      }
+    }
   }
 }
 
-console.log('Post-build verification successful.');
+console.log('Rewriting tslib imports to explicit relative paths...');
+rewriteImports(libsDir, '../node_modules');
+rewriteImports(path.join(vercelFuncDir, '_ssr'), '../node_modules');
+rewriteImports(path.join(vercelFuncDir, '_chunks'), '../node_modules');
+// Also check root files like index.mjs
+const rootFiles = fs.readdirSync(vercelFuncDir);
+for (const f of rootFiles) {
+  const fullPath = path.join(vercelFuncDir, f);
+  if (!fs.statSync(fullPath).isDirectory() && (f.endsWith('.mjs') || f.endsWith('.js'))) {
+    let content = fs.readFileSync(fullPath, 'utf-8');
+    const importRegex = /from\s+['"]tslib['"]/g;
+    if (importRegex.test(content)) {
+      content = content.replace(importRegex, `from "./node_modules/tslib/modules/index.js"`);
+      fs.writeFileSync(fullPath, content);
+      console.log(`Rewrote tslib import in ${f}`);
+    }
+  }
+}
+
+console.log('Post-build verification and rewrite successful.');
