@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
-  Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle,
+  Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle, ArrowUpRight,
 } from "lucide-react";
 import { Wordmark } from "./kr";
 import { cn } from "@/lib/utils";
@@ -56,11 +56,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
       </header>
 
-      <main className="px-4 pb-28 pt-6 lg:ml-64 lg:px-10 lg:pb-12 lg:pt-10">
+      <main className="px-5 pb-44 pt-6 lg:ml-64 lg:px-10 lg:pb-12 lg:pt-10">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      <nav aria-label="Main navigation" className="liquid-glass fixed inset-x-3 bottom-3 z-30 flex justify-between rounded-2xl border p-1.5 lg:hidden">
+      {!isActive("/insights") && <Link to="/insights" className="press fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-soft lg:hidden"><span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full border border-primary-foreground/40 text-xs font-semibold">K</span> Ask KRYPTEDU <ArrowUpRight className="size-4 shrink-0" /></Link>}
+
+      <nav aria-label="Main navigation" className="liquid-glass fixed inset-x-0 bottom-4 z-30 mx-auto flex w-[calc(100%-2rem)] max-w-md justify-between rounded-3xl border p-2 lg:hidden">
         {primary.map(({ to, label, icon: Icon }) => {
           const active = to === "/more" ? moreActive : isActive(to);
           return (
@@ -69,12 +71,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               to={to}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-medium transition-colors",
-                active ? "bg-primary text-primary-foreground shadow-soft" : "text-subtle hover:bg-secondary",
+                "press flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-medium transition-colors",
+                active ? "text-primary" : "text-subtle hover:bg-secondary",
               )}
             >
               <Icon className="size-5" strokeWidth={active ? 2 : 1.6} />
               {label}
+              <span aria-hidden className={cn("size-1 rounded-full bg-primary", active ? "opacity-100" : "opacity-0")} />
             </Link>
           );
         })}
