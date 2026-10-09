@@ -28,8 +28,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const moreActive = secondary.some((s) => isActive(s.to)) || isActive("/more");
 
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r bg-sidebar px-4 py-6 lg:flex">
+    <div className="campus-canvas min-h-screen">
+      <aside className="liquid-glass fixed inset-y-4 left-4 z-20 hidden w-60 flex-col rounded-2xl border px-4 py-6 lg:flex">
         <Wordmark className="px-2" />
         <nav className="mt-8 space-y-1">
           {primary.filter((p) => p.to !== "/more").map((item) => (
@@ -49,9 +49,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="liquid-glass sticky top-0 z-20 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <Wordmark />
-        <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border">
+        <Link to="/notifications" aria-label="Notifications" className="grid size-10 place-items-center rounded-full border border-border bg-secondary/70 text-primary transition-colors hover:bg-selected">
           <Bell className="size-4" strokeWidth={1.6} />
         </Link>
       </header>
@@ -60,16 +60,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      <nav className="fixed inset-x-3 bottom-3 z-30 flex justify-between rounded-2xl border bg-background p-1.5 shadow-soft lg:hidden">
+      <nav aria-label="Main navigation" className="liquid-glass fixed inset-x-3 bottom-3 z-30 flex justify-between rounded-2xl border p-1.5 lg:hidden">
         {primary.map(({ to, label, icon: Icon }) => {
           const active = to === "/more" ? moreActive : isActive(to);
           return (
             <Link
               key={to}
               to={to}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-medium transition-colors",
-                active ? "bg-selected text-foreground" : "text-subtle",
+                active ? "bg-primary text-primary-foreground shadow-soft" : "text-subtle hover:bg-secondary",
               )}
             >
               <Icon className="size-5" strokeWidth={active ? 2 : 1.6} />
@@ -86,9 +87,10 @@ function NavItem({ to, label, icon: Icon, active }: { to: string; label: string;
   return (
     <Link
       to={to}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-        active ? "bg-selected font-medium text-foreground" : "text-muted-foreground hover:bg-surface hover:text-foreground",
+        active ? "bg-primary font-medium text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-secondary hover:text-primary",
       )}
     >
       <Icon className="size-[18px]" strokeWidth={1.6} />

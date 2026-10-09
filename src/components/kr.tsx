@@ -2,17 +2,18 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { Risk } from "@/lib/scoring";
+import { Button } from "@/components/ui/button";
 
 export function Wordmark({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground">
+      <div className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
           <path d="M6 4v16M18 4l-9 8 9 8" />
         </svg>
       </div>
       <div className="leading-none">
-        <div className="text-[15px] font-bold tracking-[0.14em]">KRYPTEDU</div>
+        <div className="text-[15px] font-bold tracking-[0.14em] text-primary">KRYPTEDU</div>
         <div className="mt-0.5 text-[10px] uppercase tracking-wider text-subtle">Smart Campus Analytics</div>
       </div>
     </div>
@@ -23,7 +24,7 @@ export function PageHeader({ eyebrow, title, action }: { eyebrow?: string; title
   return (
     <div className="mb-6 flex items-end justify-between gap-4">
       <div>
-        {eyebrow && <div className="text-xs font-medium uppercase tracking-wider text-subtle">{eyebrow}</div>}
+        {eyebrow && <div className="text-xs font-medium uppercase tracking-wider text-primary">{eyebrow}</div>}
         <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
       </div>
       {action}
@@ -73,7 +74,8 @@ export function RiskBadge({ risk, label }: { risk: Risk; label?: string }) {
 
 export function Pill({ children, active, onClick }: { children: ReactNode; active?: boolean; onClick?: () => void }) {
   return (
-    <button
+    <Button
+      variant="outline"
       type="button"
       onClick={onClick}
       className={cn(
@@ -82,7 +84,7 @@ export function Pill({ children, active, onClick }: { children: ReactNode; activ
       )}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
