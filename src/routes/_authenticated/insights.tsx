@@ -46,7 +46,7 @@ function Insights() {
     const ac = new AbortController();
     ctrl.current = ac;
     try {
-      const r = await ask({ data: { messages: next.map(({ role, content }) => ({ role, content })) }, signal: ac.signal });
+      const r = await ask({ data: { messages: next.filter((m) => !m.failed).map(({ role, content }) => ({ role, content })) }, signal: ac.signal });
       if (ac.signal.aborted) return;
       setMsgs([...next, { role: "assistant", content: r.error ?? r.reply, ...(r.error ? { failed: true } : {}) }]);
     } catch {
