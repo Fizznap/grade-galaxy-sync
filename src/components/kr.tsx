@@ -13,7 +13,7 @@ export function Wordmark({ className }: { className?: string }) {
         </svg>
       </div>
       <div className="leading-none">
-        <div className="text-[15px] font-bold tracking-[0.14em] text-primary-deep">KRYPTEDU</div>
+        <div className="text-[15px] font-bold tracking-[0.14em] text-foreground">KRYPTEDU</div>
         <div className="mt-0.5 text-[10px] uppercase tracking-wider text-subtle">Smart Campus Analytics</div>
       </div>
     </div>
