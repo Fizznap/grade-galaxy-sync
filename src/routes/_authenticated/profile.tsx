@@ -11,7 +11,6 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function Profile() {
-  const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   return (
     <>
