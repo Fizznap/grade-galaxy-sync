@@ -1,0 +1,1 @@
+import{m as e,n as t,p as n,r,t as i}from"./generateCategoricalChart-CTrF-K-H.js";var a=i({chartName:`BarChart`,GraphicalChild:e,defaultTooltipEventType:`axis`,validateTooltipEventTypes:[`axis`,`item`],axisComponents:[{axisType:`xAxis`,AxisComp:r},{axisType:`yAxis`,AxisComp:t}],formatAxisMap:n});export{a as t};

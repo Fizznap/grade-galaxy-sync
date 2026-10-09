@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{o as t}from"./index-DzQuBgd9.js";var n=e(),r=()=>(0,n.jsx)(t,{title:`Student not found`});export{r as notFoundComponent};

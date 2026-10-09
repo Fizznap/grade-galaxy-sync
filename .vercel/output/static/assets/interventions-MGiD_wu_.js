@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";var t=e(),n=({error:e})=>(0,t.jsx)(`div`,{role:`alert`,className:`text-sm`,children:String(e?.message??e)});export{n as errorComponent};
