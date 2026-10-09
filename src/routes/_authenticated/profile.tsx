@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, PageHeader, SectionTitle } from "@/components/kr";
 import { Button } from "@/components/ui/button";
+import { IdCard } from "@/components/IdCard";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile & Settings — KRYPTEDU" }, { name: "description", content: "Your KRYPTEDU account and settings." }, { property: "og:title", content: "Profile & Settings — KRYPTEDU" }, { property: "og:description", content: "Your KRYPTEDU account and settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
@@ -17,10 +18,7 @@ function Profile() {
     <>
       <PageHeader eyebrow="Account" title="Profile & settings" />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="flex items-center gap-4">
-          <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">{name?.[0]?.toUpperCase()}</div>
-          <div><div className="font-medium">{name}</div><div className="text-sm text-muted-foreground">{user.email}</div><div className="mt-1 text-xs text-subtle">Faculty · KRYPTEDU workspace</div></div>
-        </Card>
+        <IdCard aria-label={name} />
         <Card>
           <SectionTitle title="Student Success Score model" />
           <ul className="space-y-2 text-sm text-muted-foreground">
