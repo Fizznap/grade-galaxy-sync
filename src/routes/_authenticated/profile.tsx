@@ -13,12 +13,12 @@ export const Route = createFileRoute("/_authenticated/profile")({
 function Profile() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
-  const name = (user.user_metadata?.["full_name"] as string) || user.email?.split("@")[0];
+  const _name = (user.user_metadata?.["full_name"] as string) || user.email?.split("@")[0];
   return (
     <>
       <PageHeader eyebrow="Account" title="Profile & settings" />
       <div className="grid gap-4 lg:grid-cols-2">
-        <IdCard aria-label={name} />
+        <IdCard />
         <Card>
           <SectionTitle title="Student Success Score model" />
           <ul className="space-y-2 text-sm text-muted-foreground">
