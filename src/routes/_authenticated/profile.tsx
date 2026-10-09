@@ -5,7 +5,7 @@ import { Card, PageHeader, SectionTitle } from "@/components/kr";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile & Settings — KRYPTEDU" }, { name: "description", content: "Your KRYPTEDU account and settings." }] }),
+  head: () => ({ meta: [{ title: "Profile & Settings — KRYPTEDU" }, { name: "description", content: "Your KRYPTEDU account and settings." }, { property: "og:title", content: "Profile & Settings — KRYPTEDU" }, { property: "og:description", content: "Your KRYPTEDU account and settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Profile,
 });
 

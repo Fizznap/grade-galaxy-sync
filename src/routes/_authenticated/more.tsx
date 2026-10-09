@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/kr";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/more")({
-  head: () => ({ meta: [{ title: "More — KRYPTEDU" }, { name: "description", content: "Workspace tools and settings." }] }),
+  head: () => ({ meta: [{ title: "More — KRYPTEDU" }, { name: "description", content: "Workspace tools and settings." }, { property: "og:title", content: "More — KRYPTEDU" }, { property: "og:description", content: "Workspace tools and settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: More,
 });
 

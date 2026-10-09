@@ -7,7 +7,7 @@ import { Card, Empty, PageHeader, Pill, RiskBadge, StudentLink } from "@/compone
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/students/")({
-  head: () => ({ meta: [{ title: "Students — KRYPTEDU" }, { name: "description", content: "Student directory with success scores and risk." }] }),
+  head: () => ({ meta: [{ title: "Students — KRYPTEDU" }, { name: "description", content: "Student directory with success scores and risk." }, { property: "og:title", content: "Students — KRYPTEDU" }, { property: "og:description", content: "Student directory with success scores and risk." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(studentsQuery),
   component: Students,
   errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,

@@ -6,7 +6,7 @@ import { studentsQuery, interventionsQuery, avg } from "@/lib/data";
 import { Card, PageHeader, RiskBadge, SectionTitle, Stat, StudentLink } from "@/components/kr";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Home — KRYPTEDU" }, { name: "description", content: "Institutional student success overview." }] }),
+  head: () => ({ meta: [{ title: "Home — KRYPTEDU" }, { name: "description", content: "Institutional student success overview." }, { property: "og:title", content: "Home — KRYPTEDU" }, { property: "og:description", content: "Institutional student success overview." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) =>
     Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Dashboard,

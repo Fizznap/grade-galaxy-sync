@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/integration")({
-  head: () => ({ meta: [{ title: "Data Integration — KRYPTEDU" }, { name: "description", content: "Import and validate institutional data." }] }),
+  head: () => ({ meta: [{ title: "Data Integration — KRYPTEDU" }, { name: "description", content: "Import and validate institutional data." }, { property: "og:title", content: "Data Integration — KRYPTEDU" }, { property: "og:description", content: "Import and validate institutional data." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(importsQuery), context.queryClient.ensureQueryData(studentsQuery)]),
   component: Integration,
   errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,

@@ -7,7 +7,7 @@ import { Card, PageHeader } from "@/components/kr";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/reports")({
-  head: () => ({ meta: [{ title: "Reports — KRYPTEDU" }, { name: "description", content: "Export student success reports." }] }),
+  head: () => ({ meta: [{ title: "Reports — KRYPTEDU" }, { name: "description", content: "Export student success reports." }, { property: "og:title", content: "Reports — KRYPTEDU" }, { property: "og:description", content: "Export student success reports." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Reports,
 });

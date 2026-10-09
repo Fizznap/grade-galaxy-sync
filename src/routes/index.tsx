@@ -15,6 +15,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "KRYPTEDU unifies student data to predict academic and placement risk and improve student success." },
       { property: "og:title", content: "KRYPTEDU — Smart Campus Analytics" },
       { property: "og:description", content: "Understand. Predict. Improve Student Success." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Welcome,
