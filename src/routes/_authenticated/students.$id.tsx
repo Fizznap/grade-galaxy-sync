@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InterventionDialog } from "@/components/InterventionForm";
 
 export const Route = createFileRoute("/_authenticated/students/$id")({
-  head: () => ({ meta: [{ title: "Student profile — KRYPTEDU" }, { name: "description", content: "Student intelligence profile." }, { property: "og:title", content: "Student profile — KRYPTEDU" }, { property: "og:description", content: "Student intelligence profile." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Student profile — KRYPTEDU" }] }),
   loader: async ({ context, params }) => {
     const list = await context.queryClient.ensureQueryData(studentsQuery);
     await context.queryClient.ensureQueryData(interventionsQuery);
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/_authenticated/students/$id")({
   errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,
 });
 
-// Deterministic trend derived from current values (semester history placeholder for demo data)
 function trend(seed: number, end: number, spread: number, n = 6) {
   return Array.from({ length: n }, (_, i) => {
     const wobble = Math.sin(seed * 13 + i * 1.7) * spread;
@@ -31,11 +30,14 @@ function Profile() {
   const { id } = Route.useParams();
   const { data: students } = useSuspenseQuery(studentsQuery);
   const { data: interventions } = useSuspenseQuery(interventionsQuery);
+  
   const s = students.find((x) => x.id === id)!;
+  const mine = interventions.filter((i) => i.student_id === s.id);
+  
   const seed = s.roll_no.charCodeAt(s.roll_no.length - 1);
   const gpa = trend(seed, s.cgpa, 0.6).map((v, i) => ({ sem: `S${i + 1}`, v: Math.min(10, Math.max(4, v)) }));
   const att = trend(seed + 3, s.attendance, 8).map((v, i) => ({ m: ["Apr", "May", "Jun", "Jul", "Aug", "Sep"][i], v: Math.min(100, Math.max(30, Math.round(v))) }));
-  const mine = interventions.filter((i) => i.student_id === s.id);
+  
   const tt = { borderRadius: 12, border: "1px solid var(--color-border)", fontSize: 12 };
 
   return (
@@ -46,8 +48,10 @@ function Profile() {
         title={s.name}
         action={<InterventionDialog students={students} defaultStudentId={s.id} trigger={<Button className="rounded-xl"><Plus className="size-4" /> <span className="hidden sm:inline">Create intervention</span></Button>} />}
       />
+
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="flex flex-col items-center gap-4">
+        {/* Overview Section */}
+        <Card className="flex flex-col items-center gap-4 lg:col-span-1">
           <ScoreRing value={s.successScore} />
           <div className="flex flex-wrap justify-center gap-2">
             <RiskBadge risk={s.academicRisk} label="Academic" />
@@ -55,47 +59,74 @@ function Profile() {
           </div>
           <div className="text-center text-xs text-subtle">{s.segment}</div>
         </Card>
+
         <Card className="lg:col-span-2">
-          <SectionTitle title="Score components" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Bar label="Academic index (45%)" value={s.academicIndex} />
-            <Bar label="Placement index (35%)" value={s.placementIndex} />
-            <Bar label="Engagement (20%)" value={s.engagement} />
-            <Bar label="Attendance" value={s.attendance} right={`${s.attendance}%`} />
-            <Bar label="LMS activity" value={s.lms_activity} />
-            <Bar label="CGPA" value={s.cgpa * 10} right={String(s.cgpa)} />
-          </div>
-        </Card>
-        <Card>
-          <SectionTitle title="Academic trend (CGPA)" />
-          <div className="h-40"><ResponsiveContainer><LineChart data={gpa}><XAxis dataKey="sem" fontSize={11} tickLine={false} axisLine={false} /><YAxis domain={[4, 10]} fontSize={11} width={24} tickLine={false} axisLine={false} /><Tooltip contentStyle={tt} /><Line dataKey="v" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-chart-1)" }} /></LineChart></ResponsiveContainer></div>
-        </Card>
-        <Card>
-          <SectionTitle title="Attendance history" />
-          <div className="h-40"><ResponsiveContainer><LineChart data={att}><XAxis dataKey="m" fontSize={11} tickLine={false} axisLine={false} /><YAxis domain={[30, 100]} fontSize={11} width={24} tickLine={false} axisLine={false} /><Tooltip contentStyle={tt} /><Line dataKey="v" stroke="var(--color-chart-3)" strokeWidth={2} strokeDasharray="4 3" dot={{ r: 3, fill: "var(--color-chart-3)" }} /></LineChart></ResponsiveContainer></div>
-        </Card>
-        <Card>
-          <SectionTitle title="Placement readiness" />
-          <div className="space-y-4">
-            <Bar label="Readiness" value={s.placement_readiness} />
-            <Bar label="Skills" value={s.skills_score} />
-            <Bar label="Faculty feedback" value={s.feedback_score} />
-          </div>
-        </Card>
-        <Card className="lg:col-span-2">
-          <SectionTitle title="Contributing risk factors" />
-          {s.riskFactors.length === 0 ? <div className="text-sm text-muted-foreground">No significant risk factors.</div> : (
-            <ul className="grid gap-2 sm:grid-cols-2">
+          <SectionTitle title="Overview & Risk Factors" />
+          {s.riskFactors.length === 0 ? <div className="text-sm text-muted-foreground mt-2">No significant risk factors detected.</div> : (
+            <ul className="grid gap-2 sm:grid-cols-2 mt-2">
               {s.riskFactors.map((r) => <li key={r} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-sm"><span className="size-1.5 rounded-full bg-primary" />{r}</li>)}
             </ul>
           )}
+          <div className="grid gap-4 sm:grid-cols-2 mt-6">
+             <Bar label="Success Score Index" value={s.successScore} />
+          </div>
         </Card>
-        <Card>
+
+        {/* Academics & Attendance */}
+        <Card className="lg:col-span-1">
+          <SectionTitle title="Academics" />
+          <div className="mt-4 space-y-4">
+             <Bar label="CGPA" value={s.cgpa * 10} right={String(s.cgpa)} />
+             <Bar label="Academic Index (45%)" value={s.academicIndex} />
+             <div className="text-sm text-muted-foreground pt-2 border-t">Active Backlogs: {s.backlogs}</div>
+          </div>
+          <div className="mt-6 h-32"><ResponsiveContainer><LineChart data={gpa}><XAxis dataKey="sem" fontSize={11} tickLine={false} axisLine={false} /><YAxis domain={[4, 10]} fontSize={11} width={24} tickLine={false} axisLine={false} /><Tooltip contentStyle={tt} /><Line dataKey="v" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-chart-1)" }} /></LineChart></ResponsiveContainer></div>
+        </Card>
+
+        <Card className="lg:col-span-1">
+          <SectionTitle title="Attendance" />
+          <div className="mt-4 space-y-4">
+            <Bar label="Overall Attendance" value={s.attendance} right={`${s.attendance}%`} />
+          </div>
+          <div className="mt-6 h-32"><ResponsiveContainer><LineChart data={att}><XAxis dataKey="m" fontSize={11} tickLine={false} axisLine={false} /><YAxis domain={[30, 100]} fontSize={11} width={24} tickLine={false} axisLine={false} /><Tooltip contentStyle={tt} /><Line dataKey="v" stroke="var(--color-chart-3)" strokeWidth={2} strokeDasharray="4 3" dot={{ r: 3, fill: "var(--color-chart-3)" }} /></LineChart></ResponsiveContainer></div>
+        </Card>
+
+        {/* LMS & Engagement */}
+        <Card className="lg:col-span-1">
+          <SectionTitle title="Activity & Engagement" />
+          <div className="mt-4 space-y-4">
+            <Bar label="LMS Activity" value={s.lms_activity} />
+            <Bar label="Campus Engagement (20%)" value={s.engagement} />
+          </div>
+        </Card>
+
+        {/* Placement, Skills, Feedback */}
+        <Card className="lg:col-span-1">
+          <SectionTitle title="Placement Readiness" />
+          <div className="mt-4 space-y-4">
+            <Bar label="Placement Index (35%)" value={s.placementIndex} />
+            <Bar label="Readiness Score" value={s.placement_readiness} />
+          </div>
+        </Card>
+
+        <Card className="lg:col-span-1">
+          <SectionTitle title="Skills & Feedback" />
+          <div className="mt-4 space-y-4">
+            <Bar label="Skills Assessment" value={s.skills_score} />
+            <Bar label="Faculty Feedback" value={s.feedback_score} />
+          </div>
+        </Card>
+
+        {/* Interventions */}
+        <Card className="lg:col-span-1">
           <SectionTitle title="Interventions" action={<Link to="/interventions" className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</Link>} />
-          {mine.length === 0 ? <div className="text-sm text-muted-foreground">None yet.</div> : (
-            <ul className="space-y-2">{mine.map((i) => <li key={i.id} className="text-sm"><div className="font-medium">{i.title}</div><div className="text-xs text-subtle">{i.status} · {i.priority} priority</div></li>)}</ul>
-          )}
+          <div className="mt-4">
+             {mine.length === 0 ? <div className="text-sm text-muted-foreground">No active interventions.</div> : (
+               <ul className="space-y-3">{mine.map((i) => <li key={i.id} className="text-sm"><div className="font-medium">{i.title}</div><div className="text-xs text-subtle">{i.status} · {i.priority} priority</div></li>)}</ul>
+             )}
+          </div>
         </Card>
+
       </div>
     </>
   );

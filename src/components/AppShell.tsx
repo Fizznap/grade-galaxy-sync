@@ -8,19 +8,18 @@ import { ProfileIdButton } from "./IdCard";
 import { cn } from "@/lib/utils";
 
 const primary = [
-  { to: "/dashboard", label: "Home", icon: Home },
+  { to: "/dashboard", label: "Dashboard", icon: Home },
   { to: "/students", label: "Students", icon: Users },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/data", label: "Data", icon: Database },
   { to: "/interventions", label: "Interventions", icon: ClipboardCheck },
   { to: "/more", label: "More", icon: MoreHorizontal },
 ] as const;
 
 const secondary = [
-  { to: "/integration", label: "Data Integration", icon: Database },
-  { to: "/insights", label: "AI Insights", icon: Sparkles },
   { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/insights", label: "AI Insights", icon: Sparkles },
   { to: "/notifications", label: "Notifications", icon: Bell },
-  { to: "/profile", label: "Profile & Settings", icon: UserCircle },
+  { to: "/profile", label: "Settings", icon: UserCircle },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
