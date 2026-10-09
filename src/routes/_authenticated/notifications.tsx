@@ -5,7 +5,7 @@ import { studentsQuery, interventionsQuery } from "@/lib/data";
 import { Empty, PageHeader, StudentLink } from "@/components/kr";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — KRYPTEDU" }, { name: "description", content: "Risk alerts and follow-ups." }] }),
+  head: () => ({ meta: [{ title: "Notifications — KRYPTEDU" }, { name: "description", content: "Risk alerts and follow-ups." }, { property: "og:title", content: "Notifications — KRYPTEDU" }, { property: "og:description", content: "Risk alerts and follow-ups." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Notifications,
 });

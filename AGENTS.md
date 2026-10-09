@@ -12,3 +12,4 @@
 - Student Success Score and risk rules live only in src/lib/scoring.ts (tested in scoring.test.ts); UI and AI both derive from it so numbers stay consistent.
 - Signed-in pages live under src/routes/_authenticated (client-only gate); data reads use the browser client with RLS restricted to users with a role row.
 - AI Insights runs in a server function (src/lib/ai.functions.ts) that grounds answers in the students table.
+- Shared surfaces and navigation use semantic glass tokens and global surface utilities so the visual theme stays consistent without changing data or scoring behavior.

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InterventionDialog } from "@/components/InterventionForm";
 
 export const Route = createFileRoute("/_authenticated/students/$id")({
-  head: () => ({ meta: [{ title: "Student profile — KRYPTEDU" }, { name: "description", content: "Student intelligence profile." }] }),
+  head: () => ({ meta: [{ title: "Student profile — KRYPTEDU" }, { name: "description", content: "Student intelligence profile." }, { property: "og:title", content: "Student profile — KRYPTEDU" }, { property: "og:description", content: "Student intelligence profile." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: async ({ context, params }) => {
     const list = await context.queryClient.ensureQueryData(studentsQuery);
     await context.queryClient.ensureQueryData(interventionsQuery);

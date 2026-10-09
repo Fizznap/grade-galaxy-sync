@@ -7,7 +7,7 @@ import { SEGMENTS } from "@/lib/scoring";
 import { Card, PageHeader, Pill, SectionTitle, StudentLink } from "@/components/kr";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — KRYPTEDU" }, { name: "description", content: "Segmentation and cohort analytics." }] }),
+  head: () => ({ meta: [{ title: "Analytics — KRYPTEDU" }, { name: "description", content: "Segmentation and cohort analytics." }, { property: "og:title", content: "Analytics — KRYPTEDU" }, { property: "og:description", content: "Segmentation and cohort analytics." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(studentsQuery),
   component: Analytics,
   errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,

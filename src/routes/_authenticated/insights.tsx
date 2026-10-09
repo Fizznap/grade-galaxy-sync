@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/kr";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/insights")({
-  head: () => ({ meta: [{ title: "AI Insights — KRYPTEDU" }, { name: "description", content: "Ask evidence-backed questions about your students." }] }),
+  head: () => ({ meta: [{ title: "AI Insights — KRYPTEDU" }, { name: "description", content: "Ask evidence-backed questions about your students." }, { property: "og:title", content: "AI Insights — KRYPTEDU" }, { property: "og:description", content: "Ask evidence-backed questions about your students." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Insights,
 });
 

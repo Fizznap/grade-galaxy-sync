@@ -11,7 +11,7 @@ import { InterventionDialog } from "@/components/InterventionForm";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/interventions")({
-  head: () => ({ meta: [{ title: "Interventions — KRYPTEDU" }, { name: "description", content: "Track student support actions." }] }),
+  head: () => ({ meta: [{ title: "Interventions — KRYPTEDU" }, { name: "description", content: "Track student support actions." }, { property: "og:title", content: "Interventions — KRYPTEDU" }, { property: "og:description", content: "Track student support actions." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(studentsQuery), context.queryClient.ensureQueryData(interventionsQuery)]),
   component: Interventions,
   errorComponent: ({ error }) => <div role="alert" className="text-sm">{String((error as Error)?.message ?? error)}</div>,

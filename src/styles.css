@@ -49,48 +49,55 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
 }
 
-/* KRYPTEDU monochrome system */
+/* KRYPTEDU white / purple liquid-glass system */
 :root {
   --radius: 1rem;
-  --background: oklch(1 0 0); /* #FFFFFF */
-  --surface: oklch(0.975 0 0); /* #F7F7F7 */
-  --surface-2: oklch(0.955 0 0); /* #F0F0F0 */
-  --selected: oklch(0.95 0 0); /* #EFEFEF */
-  --foreground: oklch(0.178 0 0); /* #111111 */
+  --background: oklch(0.985 0.008 300);
+  --surface: oklch(0.97 0.016 300);
+  --surface-2: oklch(0.945 0.025 300);
+  --selected: oklch(0.935 0.038 300);
+  --foreground: oklch(0.24 0.035 300);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.178 0 0);
+  --card-foreground: var(--foreground);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.178 0 0);
-  --primary: oklch(0.178 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.5 0.23 300);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.963 0 0); /* #F3F3F3 */
-  --secondary-foreground: oklch(0.178 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.45 0 0); /* #555555 */
-  --subtle: oklch(0.56 0 0); /* #777777 */
-  --accent: oklch(0.95 0 0);
-  --accent-foreground: oklch(0.178 0 0);
+  --secondary: oklch(0.955 0.024 300);
+  --secondary-foreground: oklch(0.42 0.16 300);
+  --muted: var(--surface);
+  --muted-foreground: oklch(0.48 0.025 300);
+  --subtle: oklch(0.53 0.025 300);
+  --accent: var(--selected);
+  --accent-foreground: var(--primary);
   --destructive: oklch(0.3 0 0);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.922 0 0); /* #E5E5E5 */
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.4 0 0);
-  --chart-1: oklch(0.178 0 0);
-  --chart-2: oklch(0.35 0 0);
-  --chart-3: oklch(0.52 0 0);
-  --chart-4: oklch(0.7 0 0);
-  --chart-5: oklch(0.86 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.178 0 0);
-  --sidebar-primary: oklch(0.178 0 0);
+  --border: oklch(0.9 0.023 300);
+  --input: var(--border);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.64 0.17 300);
+  --chart-3: oklch(0.74 0.11 300);
+  --chart-4: oklch(0.82 0.075 300);
+  --chart-5: oklch(0.91 0.04 300);
+  --sidebar: oklch(1 0 0 / 72%);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.95 0 0);
-  --sidebar-accent-foreground: oklch(0.178 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.4 0 0);
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -12px oklch(0 0 0 / 10%);
+  --sidebar-accent: var(--selected);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --glass: oklch(1 0 0 / 72%);
+  --glass-border: oklch(1 0 0 / 90%);
+  --glass-highlight: oklch(1 0 0 / 95%);
+  --shadow-soft: 0 4px 8px -4px oklch(0.4 0.1 300 / 8%), 0 16px 40px -16px oklch(0.4 0.1 300 / 15%);
+  --shadow-glass: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 oklch(0.75 0.06 300 / 8%), var(--shadow-soft);
+  --workspace-grid: oklch(0.6 0.12 300 / 4%);
 }
 
 @layer base {
@@ -107,9 +114,31 @@
 }
 
 @utility card-surface {
-  background: var(--color-card);
+  background: var(--glass);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility liquid-glass {
+  background: var(--glass);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility campus-canvas {
+  background-color: var(--background);
+  background-image: linear-gradient(var(--workspace-grid) 1px, transparent 1px), linear-gradient(90deg, var(--workspace-grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @utility shadow-soft {
