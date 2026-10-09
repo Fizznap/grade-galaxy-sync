@@ -32,10 +32,14 @@ export function validate(category: Category, headers: string[], rows: Record<str
   const missing = needed.filter((h) => !headers.includes(h));
   if (missing.length) return { valid: [], errors: [`Missing column(s): ${missing.join(", ")}`] };
   const valid: Record<string, string | number>[] = [];
+  const seen = new Map<string, number>();
   rows.forEach((r, idx) => {
     const line = idx + 2;
     const roll = r["roll_no"];
     if (!roll) { errors.push(`Row ${line}: roll_no is empty`); return; }
+    const first = seen.get(roll);
+    if (first) { errors.push(`Row ${line}: duplicate roll_no ${roll} (already in row ${first}), skipped`); return; }
+    seen.set(roll, line);
     const out: Record<string, string | number> = { roll_no: roll };
     for (const f of [...CATEGORIES[category], "year"]) {
       if (!(f in r) || r[f] === "") continue;
