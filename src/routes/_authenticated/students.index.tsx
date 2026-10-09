@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { studentsQuery } from "@/lib/data";
 import { Card, Empty, PageHeader, Pill, RiskBadge, StudentLink } from "@/components/kr";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ function Students() {
   const [q, setQ] = useState("");
   const [dept, setDept] = useState("All");
   const [risk, setRisk] = useState<(typeof RISK)[number]>("All");
+  const [sort, setSort] = useState("name");
+  const filtered = q !== "" || dept !== "All" || risk !== "All";
   const depts = ["All", ...new Set(data.map((s) => s.department))];
 
   const list = useMemo(
@@ -31,6 +33,7 @@ function Students() {
           (s.name.toLowerCase().includes(q.toLowerCase()) || s.roll_no.toLowerCase().includes(q.toLowerCase())),
       ),
     [data, q, dept, risk],
+  ).sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "score-asc" ? a.successScore - b.successScore : sort === "score-desc" ? b.successScore - a.successScore : b.attendance - a.attendance
   );
 
   return (
@@ -38,7 +41,8 @@ function Students() {
       <PageHeader eyebrow={`${data.length} students`} title="Student directory" />
       <div className="relative mb-3">
         <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-subtle" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or roll number" className="h-12 rounded-xl pl-11" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or roll number" className="h-12 rounded-xl pl-11 pr-11" />
+        {q && <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full hover:bg-secondary"><X className="size-4" /></button>}
       </div>
       <div className="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-2">
         {depts.map((d) => <Pill key={d} active={dept === d} onClick={() => setDept(d)}>{d}</Pill>)}
@@ -47,6 +51,15 @@ function Students() {
         {RISK.map((r) => <Pill key={r} active={risk === r} onClick={() => setRisk(r)}>{r}</Pill>)}
       </div>
 
+      <div className="mb-4 flex items-center justify-between gap-2 text-sm">
+        <span className="text-muted-foreground">{list.length} of {data.length} shown</span>
+        <div className="flex items-center gap-2">
+          {filtered && <button type="button" onClick={() => { setQ(""); setDept("All"); setRisk("All"); }} className="press rounded-full px-3 py-1.5 text-xs font-medium hover:bg-secondary">Clear filters</button>}
+          <select aria-label="Sort students" value={sort} onChange={(e) => setSort(e.target.value)} className="h-9 rounded-full border bg-card px-3 text-xs">
+            <option value="name">Name A–Z</option><option value="score-asc">Lowest score first</option><option value="score-desc">Highest score first</option><option value="att">Attendance</option>
+          </select>
+        </div>
+      </div>
       {list.length === 0 ? (
         <Empty title="No students match" text="Try a different search or filter." />
       ) : (

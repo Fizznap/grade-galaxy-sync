@@ -10,34 +10,41 @@ import type { Scored } from "@/lib/scoring";
 
 const sel = "h-11 w-full rounded-xl border bg-background px-3 text-sm";
 
-export function InterventionDialog({ students, defaultStudentId, trigger }: { students: Scored[]; defaultStudentId?: string; trigger: React.ReactNode }) {
+type Existing = { id: string; student_id: string; title: string; category: string; priority: string; assigned_to: string; due_date: string | null; notes: string };
+
+export function InterventionDialog({ students, defaultStudentId, trigger, existing }: { students: Scored[]; defaultStudentId?: string; trigger: React.ReactNode; existing?: Existing }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState({
-    student_id: defaultStudentId ?? students[0]?.id ?? "",
-    title: "", category: "Academic", priority: "Medium", assigned_to: "", due_date: "", notes: "",
-  });
+  const blank = existing
+    ? { student_id: existing.student_id, title: existing.title, category: existing.category, priority: existing.priority, assigned_to: existing.assigned_to, due_date: existing.due_date ?? "", notes: existing.notes }
+    : { student_id: defaultStudentId ?? students[0]?.id ?? "", title: "", category: "Academic", priority: "Medium", assigned_to: "", due_date: "", notes: "" };
+  const [f, setF] = useState(blank);
   const [busy, setBusy] = useState(false);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!f.title.trim()) { toast.error("Add a title"); return; }
     setBusy(true);
-    const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("interventions").insert({ ...f, due_date: f.due_date || null, created_by: u.user?.id ?? null });
+    let error;
+    if (existing) {
+      ({ error } = await supabase.from("interventions").update({ ...f, due_date: f.due_date || null }).eq("id", existing.id));
+    } else {
+      const { data: u } = await supabase.auth.getUser();
+      ({ error } = await supabase.from("interventions").insert({ ...f, due_date: f.due_date || null, created_by: u.user?.id ?? null }));
+    }
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Intervention created");
+    toast.success(existing ? "Intervention updated" : "Intervention created");
     qc.invalidateQueries({ queryKey: ["interventions"] });
     setOpen(false);
-    setF((p) => ({ ...p, title: "", notes: "" }));
+    if (!existing) setF((p) => ({ ...p, title: "", notes: "" }));
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && existing) setF(blank); }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="rounded-2xl">
-        <DialogHeader><DialogTitle>New intervention</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{existing ? "Edit intervention" : "New intervention"}</DialogTitle></DialogHeader>
         <form onSubmit={save} className="space-y-3">
           <select className={sel} value={f.student_id} onChange={(e) => setF({ ...f, student_id: e.target.value })}>
             {students.map((s) => <option key={s.id} value={s.id}>{s.name} · {s.roll_no}</option>)}
@@ -56,7 +63,10 @@ export function InterventionDialog({ students, defaultStudentId, trigger }: { st
             <Input className="h-11 rounded-xl" type="date" value={f.due_date} onChange={(e) => setF({ ...f, due_date: e.target.value })} />
           </div>
           <Textarea className="rounded-xl" placeholder="Notes" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
-          <Button type="submit" disabled={busy} className="h-11 w-full rounded-xl">{busy ? "Saving…" : "Create intervention"}</Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="secondary" className="h-11 rounded-xl" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy} className="h-11 rounded-xl">{busy ? "Saving…" : existing ? "Save changes" : "Create"}</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

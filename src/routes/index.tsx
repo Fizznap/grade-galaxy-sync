@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Wordmark } from "@/components/kr";
@@ -29,6 +29,13 @@ function Welcome() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
+
+  async function forgot() {
+    if (!email) { toast.error("Enter your email first"); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+    if (error) toast.error(error.message); else toast.success("Password reset link sent to your inbox.");
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -97,7 +104,11 @@ function Welcome() {
           <form onSubmit={submit} className="mt-8 space-y-3">
             {mode === "up" && <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} className="h-12 rounded-xl" />}
             <Input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 rounded-xl" />
-            <Input type="password" required minLength={6} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 rounded-xl" />
+            <div className="relative">
+              <Input type={show ? "text" : "password"} required minLength={6} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 rounded-xl pr-12" />
+              <button type="button" onClick={() => setShow(!show)} aria-label={show ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-secondary">{show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
+            </div>
+            {mode === "in" && <button type="button" onClick={forgot} className="block text-xs font-medium text-muted-foreground hover:text-foreground">Forgot password?</button>}
             <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl">
               {busy ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"} <ArrowRight className="size-4" />
             </Button>

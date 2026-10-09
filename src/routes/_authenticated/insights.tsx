@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, useEffect } from "react";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { ArrowUp, RotateCcw, Sparkles, SquarePen } from "lucide-react";
 import { askInsights } from "@/lib/ai.functions";
 import { PageHeader } from "@/components/kr";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ const SUGGESTIONS = [
   "Suggest interventions for attendance risk",
 ];
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; failed?: boolean };
 
 function render(text: string) {
   return text.split("\n").map((line, i) => {
@@ -36,17 +36,17 @@ function Insights() {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [msgs, busy]);
 
-  async function send(text: string) {
+  async function send(text: string, base: Msg[] = msgs) {
     if (!text.trim() || busy) return;
-    const next = [...msgs, { role: "user" as const, content: text.trim() }];
+    const next = [...base, { role: "user" as const, content: text.trim() }];
     setMsgs(next);
     setInput("");
     setBusy(true);
     try {
-      const r = await ask({ data: { messages: next } });
-      setMsgs([...next, { role: "assistant", content: r.error ?? r.reply }]);
+      const r = await ask({ data: { messages: next.map(({ role, content }) => ({ role, content })) } });
+      setMsgs([...next, { role: "assistant", content: r.error ?? r.reply, ...(r.error ? { failed: true } : {}) }]);
     } catch {
-      setMsgs([...next, { role: "assistant", content: "The assistant is unavailable right now." }]);
+      setMsgs([...next, { role: "assistant", content: "The assistant is unavailable right now.", failed: true }]);
     } finally {
       setBusy(false);
     }
@@ -54,7 +54,7 @@ function Insights() {
 
   return (
     <div className="flex min-h-[calc(100vh-14rem)] flex-col lg:min-h-[calc(100vh-6rem)]">
-      <PageHeader eyebrow="KRYPTEDU AI" title="AI Insights" />
+      <PageHeader eyebrow="KRYPTEDU AI" title="AI Insights" action={msgs.length > 0 ? <button type="button" disabled={busy} onClick={() => { if (confirm("Start a new conversation? This clears the current one.")) setMsgs([]); }} className="press flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2 text-xs font-medium disabled:opacity-40"><SquarePen className="size-4" /> New chat</button> : undefined} />
       <div className="flex-1 space-y-4">
         {msgs.length === 0 && (
           <div className="py-10 text-center">
@@ -71,6 +71,7 @@ function Insights() {
             <div className={cn("max-w-[85%] space-y-1 rounded-2xl px-4 py-3 text-sm leading-relaxed", m.role === "user" ? "bg-primary text-primary-foreground" : "card-surface")}>
               {m.role === "assistant" && <div className="mb-1 flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-subtle"><Sparkles className="size-3" /> Answer</div>}
               {render(m.content)}
+              {m.failed && i === msgs.length - 1 && <button type="button" onClick={() => { const prev = msgs.slice(0, -1); const last = prev[prev.length - 1]; setMsgs(prev.slice(0, -1)); if (last) void send(last.content, prev.slice(0, -1)); }} className="press mt-2 flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium"><RotateCcw className="size-3.5" /> Retry</button>}
             </div>
           </div>
         ))}

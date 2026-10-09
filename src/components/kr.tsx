@@ -141,9 +141,9 @@ export function Loading() {
   );
 }
 
-export function StudentLink({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
+export function StudentLink({ id, children, className, onClick }: { id: string; children: ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <Link to="/students/$id" params={{ id }} className={className}>
+    <Link to="/students/$id" params={{ id }} className={className} onClick={onClick}>
       {children}
     </Link>
   );

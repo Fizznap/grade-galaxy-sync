@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Calendar, Check, Plus, User } from "lucide-react";
+import { Calendar, Check, Pencil, Plus, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { interventionsQuery, studentsQuery } from "@/lib/data";
 import { Empty, PageHeader, Pill, StudentLink } from "@/components/kr";
@@ -24,8 +24,20 @@ function Interventions() {
   const { data } = useSuspenseQuery(interventionsQuery);
   const qc = useQueryClient();
   const [filter, setFilter] = useState("All");
+  const [who, setWho] = useState("All");
+  const today = new Date(new Date().toDateString());
+  const isOverdue = (i: { due_date: string | null; status: string }) => !!i.due_date && i.status !== "Completed" && new Date(i.due_date) < today;
+  const owners = ["All", ...new Set(data.map((i) => i.assigned_to || "Unassigned"))];
   const byId = new Map(students.map((s) => [s.id, s]));
-  const list = data.filter((i) => filter === "All" || i.status === filter);
+  const list = data.filter((i) => (filter === "All" || (filter === "Overdue" ? isOverdue(i) : i.status === filter)) && (who === "All" || (i.assigned_to || "Unassigned") === who));
+
+  async function remove(id: string) {
+    if (!confirm("Delete this intervention? This cannot be undone.")) return;
+    const { error } = await supabase.from("interventions").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Intervention deleted");
+    qc.invalidateQueries({ queryKey: ["interventions"] });
+  }
 
   async function setStatus(id: string, status: string) {
     const { error } = await supabase.from("interventions").update({ status }).eq("id", id);
@@ -42,13 +54,16 @@ function Interventions() {
         action={<InterventionDialog students={students} trigger={<Button className="rounded-xl"><Plus className="size-4" /> New</Button>} />}
       />
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-2">
-        {["All", ...STATUSES].map((s) => <Pill key={s} active={filter === s} onClick={() => setFilter(s)}>{s}</Pill>)}
+        {["All", ...STATUSES, "Overdue"].map((s) => <Pill key={s} active={filter === s} onClick={() => setFilter(s)}>{s}</Pill>)}
+      </div>
+      <div className="mb-4 flex items-center gap-2 text-sm"><span className="text-muted-foreground">Assignee</span>
+        <select aria-label="Filter by assignee" value={who} onChange={(e) => setWho(e.target.value)} className="h-9 rounded-full border bg-card px-3 text-xs">{owners.map((o) => <option key={o}>{o}</option>)}</select>
       </div>
       {list.length === 0 ? <Empty title="No interventions here" text="Create one from a student profile or the New button." /> : (
         <div className="grid gap-3 md:grid-cols-2">
           {list.map((i) => {
             const s = byId.get(i.student_id);
-            const overdue = i.due_date && i.status !== "Completed" && new Date(i.due_date) < new Date(new Date().toDateString());
+            const overdue = isOverdue(i);
             return (
               <div key={i.id} className="card-surface p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -58,6 +73,10 @@ function Interventions() {
                     {s && <StudentLink id={s.id} className="text-xs text-muted-foreground underline-offset-2 hover:underline">{s.name} · {s.roll_no}</StudentLink>}
                   </div>
                   <span className={cn("rounded-full border px-2 py-0.5 text-[11px] font-medium", i.priority === "High" ? "border-primary bg-primary text-primary-foreground" : i.priority === "Medium" ? "bg-surface-2" : "")}>{i.priority}</span>
+                </div>
+                <div className="mt-2 flex justify-end gap-1">
+                  <InterventionDialog students={students} existing={i} trigger={<button type="button" aria-label="Edit intervention" className="press grid size-9 place-items-center rounded-full hover:bg-secondary"><Pencil className="size-4" /></button>} />
+                  <button type="button" onClick={() => remove(i.id)} aria-label="Delete intervention" className="press grid size-9 place-items-center rounded-full text-destructive hover:bg-destructive/10"><Trash2 className="size-4" /></button>
                 </div>
                 {i.notes && <p className="mt-2 text-sm text-muted-foreground">{i.notes}</p>}
                 <div className="mt-3 flex flex-wrap gap-3 text-xs text-subtle">
