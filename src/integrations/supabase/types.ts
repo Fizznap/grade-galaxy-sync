@@ -14,16 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      data_imports: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          filename: string
+          id: string
+          message: string
+          row_count: number
+          status: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          filename: string
+          id?: string
+          message?: string
+          row_count?: number
+          status?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          filename?: string
+          id?: string
+          message?: string
+          row_count?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      interventions: {
+        Row: {
+          assigned_to: string
+          category: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          notes: string
+          priority: string
+          status: string
+          student_id: string
+          title: string
+        }
+        Insert: {
+          assigned_to?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string
+          priority?: string
+          status?: string
+          student_id: string
+          title: string
+        }
+        Update: {
+          assigned_to?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string
+          priority?: string
+          status?: string
+          student_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interventions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          attendance: number
+          backlogs: number
+          cgpa: number
+          created_at: string
+          department: string
+          engagement: number
+          feedback_score: number
+          id: string
+          lms_activity: number
+          name: string
+          placement_readiness: number
+          roll_no: string
+          skills_score: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          attendance?: number
+          backlogs?: number
+          cgpa?: number
+          created_at?: string
+          department: string
+          engagement?: number
+          feedback_score?: number
+          id?: string
+          lms_activity?: number
+          name: string
+          placement_readiness?: number
+          roll_no: string
+          skills_score?: number
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          attendance?: number
+          backlogs?: number
+          cgpa?: number
+          created_at?: string
+          department?: string
+          engagement?: number
+          feedback_score?: number
+          id?: string
+          lms_activity?: number
+          name?: string
+          placement_readiness?: number
+          roll_no?: string
+          skills_score?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "faculty"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +311,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "faculty"],
+    },
   },
 } as const
