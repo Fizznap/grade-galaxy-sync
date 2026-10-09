@@ -58,6 +58,7 @@ function Reset() {
         <Wordmark />
         <h1 className="text-2xl font-semibold tracking-tight">Set a new password</h1>
         <Input type="password" required minLength={6} placeholder="New password" value={pw} onChange={(e) => setPw(e.target.value)} className="h-12 rounded-xl" />
+        <Input type="password" required minLength={6} placeholder="Confirm new password" value={pw2} onChange={(e) => setPw2(e.target.value)} className="h-12 rounded-xl" />
         <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl">{busy ? "Saving…" : "Update password"}</Button>
         <Button type="button" variant="ghost" onClick={() => navigate({ to: "/" })} className="w-full">Back to sign in</Button>
       </form>
