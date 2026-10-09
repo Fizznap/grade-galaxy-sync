@@ -51,7 +51,7 @@ function Dashboard() {
     <>
       <header className="mb-7 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">Your campus, connected</p>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="icon" className="rounded-full"><Link to="/notifications" aria-label="Notifications"><Bell className="size-4" /></Link></Button>
           <Button asChild variant="secondary" size="icon" className="rounded-full border border-glass-border"><Link to="/profile" aria-label="Profile"><UserCircle className="size-5" /></Link></Button>
         </div>
