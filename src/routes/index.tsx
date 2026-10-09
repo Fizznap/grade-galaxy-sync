@@ -34,7 +34,7 @@ function Welcome() {
   async function forgot() {
     if (!email) { toast.error("Enter your email first"); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
-    if (error) toast.error(error.message); else toast.success("Password reset link sent to your inbox.");
+    if (error && /rate/i.test(error.message)) toast.error("Too many requests. Please wait a minute and try again."); else toast.success("If an account exists for that email, a reset link is on its way.");
   }
 
   useEffect(() => {
