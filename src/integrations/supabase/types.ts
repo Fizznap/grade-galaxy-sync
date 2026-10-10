@@ -131,6 +131,7 @@ export type Database = {
           roll_no: string
           skills_score: number
           updated_at: string
+          user_id: string | null
           year: number
         }
         Insert: {
@@ -148,6 +149,7 @@ export type Database = {
           roll_no: string
           skills_score?: number
           updated_at?: string
+          user_id?: string | null
           year?: number
         }
         Update: {
@@ -165,6 +167,7 @@ export type Database = {
           roll_no?: string
           skills_score?: number
           updated_at?: string
+          user_id?: string | null
           year?: number
         }
         Relationships: []
@@ -192,6 +195,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_all_users: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -200,9 +212,16 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      set_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "admin" | "faculty"
+      app_role: "admin" | "faculty" | "student" | "placement" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -330,7 +349,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "faculty"],
+      app_role: ["admin", "faculty", "student", "placement", "pending"],
     },
   },
 } as const
