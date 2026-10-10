@@ -10,10 +10,9 @@ async function approved(supabase: any, userId: string) {
   return !!data && data.role !== "pending";
 }
 
-async function ownSession(userId: string, id: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("interview_sessions").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
-  return { supabaseAdmin, session: data };
+async function ownSession(supabase: any, userId: string, id: string) {
+  const { data } = await supabase.from("interview_sessions").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
+  return { session: data };
 }
 
 export const startInterview = createServerFn({ method: "POST" })
@@ -33,8 +32,7 @@ export const startInterview = createServerFn({ method: "POST" })
     if (res.error) return { id: null, questions: [], error: res.error };
     const questions = validateQuestions(res.data, data.count, data.type);
     if (!questions) return { id: null, questions: [], error: "The AI didn't return enough usable questions. Please retry." };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabaseAdmin.from("interview_sessions").insert({
+    const { data: row, error } = await context.supabase.from("interview_sessions").insert({
       user_id: context.userId, target_role: data.role, interview_type: data.type, difficulty: data.level, questions: questions as never,
     }).select("id").single();
     if (error) return { id: null, questions: [], error: "Couldn't save the interview. Please retry." };
