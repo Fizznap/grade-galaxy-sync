@@ -110,3 +110,23 @@ export const SEGMENTS: Segment[] = [
   "Low Academic / High Placement",
   "Low Academic / Low Placement",
 ];
+
+/** Challenge support groups (a student may match several; insufficient-data students match only that group). */
+export type SupportGroup = "Urgent support" | "Strong academics, low placement" | "Good academics, poor attendance" | "Placement-ready, low risk" | "Insufficient data";
+export const SUPPORT_GROUPS: { id: SupportGroup; rule: string }[] = [
+  { id: "Urgent support", rule: "High academic risk and high placement risk" },
+  { id: "Strong academics, low placement", rule: "Academic index ≥ 65, placement index < 60" },
+  { id: "Good academics, poor attendance", rule: "CGPA ≥ 7 and attendance < 75%" },
+  { id: "Placement-ready, low risk", rule: "Low placement risk and low academic risk" },
+  { id: "Insufficient data", rule: "2 or more indicators missing (recorded as 0)" },
+];
+export function supportGroups(s: StudentRow): SupportGroup[] {
+  if (dataCompleteness(s).missing.length >= 2) return ["Insufficient data"];
+  const g: SupportGroup[] = [];
+  const a = academicRisk(s), p = placementRisk(s);
+  if (a === "High" && p === "High") g.push("Urgent support");
+  if (academicIndex(s) >= 65 && placementIndex(s) < 60) g.push("Strong academics, low placement");
+  if (n(s.cgpa) >= 7 && n(s.attendance) < 75) g.push("Good academics, poor attendance");
+  if (a === "Low" && p === "Low") g.push("Placement-ready, low risk");
+  return g;
+}
