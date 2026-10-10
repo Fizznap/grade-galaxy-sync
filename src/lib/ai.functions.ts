@@ -137,7 +137,7 @@ Analyze this student data and the user query to provide insights in JSON format.
       const ai = new GoogleGenAI({ apiKey: key });
       const modelId = process.env["GEMINI_MODEL"] || "gemini-3.5-flash";
       mark[`model_${modelId}`] = 1;
-      const response = await ai.models.generateContent({
+      const call = () => ai.models.generateContent({
         model: modelId,
         contents: [
           { role: "user", parts: [{ text: system }] },
@@ -152,6 +152,15 @@ Analyze this student data and the user query to provide insights in JSON format.
           abortSignal: AbortSignal.timeout(45000),
         }
       });
+      let response;
+      try { response = await call(); }
+      catch (e: any) {
+        // One bounded retry for transient overload (503) or rate limit (429).
+        if (e?.status !== 503 && e?.status !== 429) throw e;
+        mark["retries"] = 1;
+        await new Promise((r) => setTimeout(r, 1200));
+        response = await call();
+      }
       lap("gemini_ms", tg);
       lap("total_ms", t0);
       console.log(`[ai ${reqId}] ok`, JSON.stringify(mark));
