@@ -67,6 +67,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        <p className="mt-3 break-words rounded-lg bg-secondary px-3 py-2 text-left font-mono text-[11px] text-muted-foreground">
+          Error details: {String((error as Error)?.message || error).slice(0, 240)}
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -93,6 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
+      { name: "google", content: "notranslate" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "KRYPTEDU — Smart Campus Analytics" },
       { name: "description", content: "Understand. Predict. Improve Student Success." },
@@ -119,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" translate="no">
       <head>
         <HeadContent />
       </head>
