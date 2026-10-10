@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Bar as RBar, BarChart, CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts";
 import { studentsQuery, avg } from "@/lib/data";
-import { SEGMENTS } from "@/lib/scoring";
+import { SEGMENTS, SUPPORT_GROUPS, supportGroups, type SupportGroup } from "@/lib/scoring";
 import { Card, PageHeader, Pill, SectionTitle, StudentLink } from "@/components/kr";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
@@ -21,6 +21,7 @@ function Analytics() {
   const { data } = useSuspenseQuery(studentsQuery);
   const [dept, setDept] = useState("All");
   const [seg, setSeg] = useState<string | null>(null);
+  const [grp, setGrp] = useState<SupportGroup | null>(null);
   const depts = ["All", ...new Set(data.map((s) => s.department))];
   const list = data.filter((s) => dept === "All" || s.department === dept);
 
@@ -32,6 +33,8 @@ function Analytics() {
     r, academic: list.filter((s) => s.academicRisk === r).length, placement: list.filter((s) => s.placementRisk === r).length,
   }));
   const segCounts = SEGMENTS.map((sg) => ({ sg, n: list.filter((s) => s.segment === sg).length }));
+  const grpCounts = SUPPORT_GROUPS.map((g) => ({ ...g, list: list.filter((s) => supportGroups(s).includes(g.id)) }));
+  const grpList = grp ? grpCounts.find((g) => g.id === grp)?.list ?? [] : [];
   const segList = seg ? list.filter((s) => s.segment === seg) : [];
 
   return (
@@ -75,6 +78,30 @@ function Analytics() {
             <div className="flex flex-wrap gap-2">
               {segList.map((s) => <StudentLink key={s.id} id={s.id} className="rounded-full border px-3 py-1.5 text-xs hover:bg-surface">{s.name} · {s.successScore}</StudentLink>)}
             </div>
+          </div>
+        )}
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle title="Support groups" action={<span className="text-xs text-subtle">Tap a group to see its students</span>} />
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+          {grpCounts.map((g) => (
+            <button key={g.id} aria-pressed={grp === g.id} onClick={() => setGrp(grp === g.id ? null : g.id)} className={`rounded-xl border p-3 text-left transition-colors ${grp === g.id ? "border-primary bg-selected" : "hover:bg-surface"}`}>
+              <div className="text-2xl font-semibold">{g.list.length}</div>
+              <div className="text-sm font-medium">{g.id}</div>
+              <div className="mt-1 text-[11px] text-subtle">{g.rule}</div>
+            </button>
+          ))}
+        </div>
+        {grp && (
+          <div className="mt-4 divide-y">
+            {grpList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">No students in this group{dept !== "All" ? ` in ${dept}` : ""}.</p> :
+              [...grpList].sort((a, b) => a.successScore - b.successScore).map((s) => (
+                <div key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <StudentLink id={s.id} name={s.name} />
+                  <span className="text-xs text-subtle">{s.roll_no} · Score {s.successScore} · Att. {s.attendance}% · CGPA {s.cgpa}</span>
+                </div>
+              ))}
           </div>
         )}
       </Card>
