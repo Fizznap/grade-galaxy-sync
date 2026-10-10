@@ -35,7 +35,9 @@ function Insights() {
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const ctrl = useRef<AbortController | null>(null);
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [msgs, busy]);
+  // Braces matter: newer Chrome returns a Promise from scrollIntoView, and React
+  // would call that returned value as a cleanup function ("l is not a function").
+  useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
 
   async function send(text: string, base: Msg[] = msgs) {
     if (!text.trim() || busy) return;
