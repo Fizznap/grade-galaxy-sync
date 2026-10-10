@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { KeyRound, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, PageHeader, SectionTitle } from "@/components/kr";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,27 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: Profile,
 });
 
+const ROLE_LABELS: Record<string, string> = { admin: "Administrator", faculty: "Faculty", placement: "Placement officer", student: "Student", pending: "Pending approval" };
+
 function Profile() {
   const navigate = useNavigate();
+  const { user, role } = Route.useRouteContext() as { user?: { email?: string; created_at?: string; last_sign_in_at?: string }; role?: string };
   return (
     <>
       <PageHeader eyebrow="Account" title="Profile & settings" />
       <div className="grid gap-4 lg:grid-cols-2">
         <IdCard />
         <Card>
-          <SectionTitle title="Student Success Score model" />
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>Academic index — 45% (CGPA, attendance, LMS, backlogs)</li>
-            <li>Placement index — 35% (readiness, skills, feedback)</li>
-            <li>Engagement — 20%</li>
-          </ul>
+          <SectionTitle title="Account details" />
+          <dl className="space-y-3 text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Email</dt><dd className="truncate font-medium">{user?.email ?? "—"}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Role</dt><dd className="font-medium">{ROLE_LABELS[role ?? ""] ?? "No role assigned"}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Member since</dt><dd className="font-medium">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Last sign-in</dt><dd className="font-medium">{user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</dd></div>
+          </dl>
+          <Button variant="secondary" className="mt-4 rounded-xl border" onClick={() => navigate({ to: "/reset-password" })}>
+            <KeyRound className="size-4" /> Change password
+          </Button>
         </Card>
       </div>
       <Button variant="secondary" className="mt-6 rounded-xl border" onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}>

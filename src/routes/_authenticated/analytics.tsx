@@ -44,6 +44,15 @@ function Analytics() {
         {depts.map((d) => <Pill key={d} active={dept === d} onClick={() => setDept(d)}>{d}</Pill>)}
       </div>
 
+      <Card className="mb-4">
+        <SectionTitle title="How the Student Success Score works" />
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li>Academic index — 45% (CGPA, attendance, LMS, backlogs)</li>
+          <li>Placement index — 35% (readiness, skills, feedback)</li>
+          <li>Engagement — 20%</li>
+        </ul>
+      </Card>
+
       <Card>
         <SectionTitle title="Student segmentation" action={<span className="text-xs text-subtle">Academic index × Placement index</span>} />
         <div className="h-80">
