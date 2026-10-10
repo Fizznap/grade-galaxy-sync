@@ -16,7 +16,7 @@ export const askInsights = createServerFn({ method: "POST" })
     const userRole = roleData?.role || "pending";
     if (userRole === "pending") return { reply: "", error: "Account pending approval." };
 
-    const key = process.env["GEMINI_API_KEY"];
+    const key = process.env["GOOGLE_API_KEY"] || process.env["GEMINI_API_KEY"];
 
     let system = "";
     let systemInstruction = "";
