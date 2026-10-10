@@ -49,9 +49,13 @@ function Insights() {
       const r = await ask({ data: { messages: next.filter((m) => !m.failed).map(({ role, content }) => ({ role, content })) }, signal: ac.signal });
       if (ac.signal.aborted) return;
       setMsgs([...next, { role: "assistant", content: r.error ?? r.reply, ...(r.error ? { failed: true } : {}) }]);
-    } catch {
+    } catch (e: unknown) {
       if (ac.signal.aborted) return;
-      setMsgs([...next, { role: "assistant", content: "The assistant is unavailable right now.", failed: true }]);
+      const status = (e as { status?: number })?.status ?? (e instanceof Response ? e.status : undefined);
+      const msg = status === 401 ? "Your session expired. Please sign in again."
+        : typeof navigator !== "undefined" && !navigator.onLine ? "You're offline. Check your connection and retry."
+        : "Couldn't reach the assistant. Please retry.";
+      setMsgs([...next, { role: "assistant", content: msg, failed: true }]);
     } finally {
       if (ctrl.current === ac) { ctrl.current = null; setBusy(false); }
     }
@@ -76,7 +80,7 @@ function Insights() {
             <h2 className="mt-6 text-2xl font-semibold tracking-tight">How can I help today?</h2>
             <p className="mt-1 text-sm text-muted-foreground">Answers are grounded in your institution's student data.</p>
             <div className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((s) => <button key={s} onClick={() => send(s)} className="rounded-full border bg-surface px-4 py-2 text-xs hover:bg-surface-2">{s}</button>)}
+              {SUGGESTIONS.map((s) => <button type="button" key={s} onClick={() => void send(s)} className="rounded-full border bg-surface px-4 py-2 text-xs hover:bg-surface-2">{s}</button>)}
             </div>
           </div>
         )}
