@@ -10,10 +10,9 @@ async function approved(supabase: any, userId: string) {
   return !!data && data.role !== "pending";
 }
 
-async function ownSession(userId: string, id: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("interview_sessions").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
-  return { supabaseAdmin, session: data };
+async function ownSession(supabase: any, userId: string, id: string) {
+  const { data } = await supabase.from("interview_sessions").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
+  return { session: data };
 }
 
 export const startInterview = createServerFn({ method: "POST" })
@@ -33,8 +32,7 @@ export const startInterview = createServerFn({ method: "POST" })
     if (res.error) return { id: null, questions: [], error: res.error };
     const questions = validateQuestions(res.data, data.count, data.type);
     if (!questions) return { id: null, questions: [], error: "The AI didn't return enough usable questions. Please retry." };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabaseAdmin.from("interview_sessions").insert({
+    const { data: row, error } = await context.supabase.from("interview_sessions").insert({
       user_id: context.userId, target_role: data.role, interview_type: data.type, difficulty: data.level, questions: questions as never,
     }).select("id").single();
     if (error) return { id: null, questions: [], error: "Couldn't save the interview. Please retry." };
@@ -50,7 +48,7 @@ export const submitAnswer = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     if (!(await approved(context.supabase, context.userId))) return { evaluation: null, error: "Your account is waiting for approval." };
-    const { supabaseAdmin, session } = await ownSession(context.userId, data.id);
+    const { session } = await ownSession(context.supabase, context.userId, data.id);
     if (!session) return { evaluation: null, error: "Interview not found." };
     const questions = session.questions as unknown as Question[];
     const answers = session.answers as unknown as Answer[];
@@ -68,7 +66,7 @@ export const submitAnswer = createServerFn({ method: "POST" })
     if (res.error) return { evaluation: null, error: res.error };
     const evaluation = validateEvaluation(res.data, q.kind);
     if (!evaluation) return { evaluation: null, error: "The AI feedback was incomplete. Please retry." };
-    const { error } = await supabaseAdmin.from("interview_sessions").update({ answers: [...answers, { answer: data.answer, evaluation }] as never }).eq("id", data.id).eq("user_id", context.userId);
+    const { error } = await context.supabase.from("interview_sessions").update({ answers: [...answers, { answer: data.answer, evaluation }] as never }).eq("id", data.id).eq("user_id", context.userId);
     if (error) return { evaluation: null, error: "Couldn't save your answer. Please retry." };
     return { evaluation, error: null };
   });
@@ -78,7 +76,7 @@ export const finishInterview = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => ({ id: String(d.id) }))
   .handler(async ({ data, context }) => {
     if (!(await approved(context.supabase, context.userId))) return { error: "Your account is waiting for approval." };
-    const { supabaseAdmin, session } = await ownSession(context.userId, data.id);
+    const { session } = await ownSession(context.supabase, context.userId, data.id);
     if (!session) return { error: "Interview not found." };
     const questions = session.questions as unknown as Question[];
     const answers = session.answers as unknown as Answer[];
@@ -92,7 +90,7 @@ export const finishInterview = createServerFn({ method: "POST" })
     if (res.error) return { error: res.error };
     const summary = validateSummary(res.data);
     if (!summary) return { error: "The AI summary was incomplete. Please retry." };
-    const { error } = await supabaseAdmin.from("interview_sessions").update({
+    const { error } = await context.supabase.from("interview_sessions").update({
       summary: summary as never, overall_score: overallScore(answers), status: "completed", completed_at: new Date().toISOString(),
     }).eq("id", data.id).eq("user_id", context.userId);
     return { error: error ? "Couldn't save the summary. Please retry." : null };
