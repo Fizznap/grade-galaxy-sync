@@ -70,8 +70,8 @@ describe("CSV validation", () => {
   it("Optional name/department captured when present", () => {
     const { headers, rows } = parseCsv("roll_no,name,department,attendance\nKR1,John,CSE,80\n");
     const r = validate("Attendance", headers, rows);
-    expect(r.valid[0].name).toBe("John");
-    expect(r.valid[0].department).toBe("CSE");
+    expect(r.valid[0]?.["name"]).toBe("John");
+    expect(r.valid[0]?.["department"]).toBe("CSE");
   });
 
   it("Boundary values: cgpa exactly 0 and 10 accepted, attendance exactly 0 and 100 accepted", () => {

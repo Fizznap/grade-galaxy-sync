@@ -15,6 +15,13 @@
       "when": 1791530572793,
       "tag": "0001_notification_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791598805009,
+      "tag": "0002_add_roles_student_link_and_admin_rpcs",
+      "breakpoints": true
     }
   ]
 }

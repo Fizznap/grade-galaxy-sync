@@ -12,11 +12,11 @@ export const askInsights = createServerFn({ method: "POST" })
     return { messages: d.messages.slice(-12).map((m) => ({ role: m.role, content: String(m.content).slice(0, 4000) })) };
   })
   .handler(async ({ data, context }) => {
-    const { data: roleData } = await context.supabase.from("user_roles").select("role").eq("user_id", context.user.id).single();
+    const { data: roleData } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId).single();
     const userRole = roleData?.role || "pending";
     if (userRole === "pending") return { reply: "", error: "Account pending approval." };
 
-    const key = process.env["GEMINI_API_KEY"];
+    const key = process.env["GOOGLE_API_KEY"] || process.env["GEMINI_API_KEY"];
 
     let system = "";
     let systemInstruction = "";
@@ -24,7 +24,7 @@ export const askInsights = createServerFn({ method: "POST" })
     let fallbackReply = "";
 
     if (userRole === "student") {
-      const { data: student, error } = await context.supabase.from("students").select("*").eq("user_id", context.user.id).single();
+      const { data: student, error } = await context.supabase.from("students").select("*").eq("user_id", context.userId).single();
       if (error || !student) return { reply: "", error: "Could not load student data." };
       
       const scoredStudent = score(student as unknown as StudentRow);
@@ -124,7 +124,7 @@ Analyze this student data and the user query to provide insights in JSON format.
 
     try {
       const ai = new GoogleGenAI({ apiKey: key });
-      const modelId = process.env["GEMINI_MODEL"] || "gemini-2.5-flash";
+      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.8-flash";
       const response = await ai.models.generateContent({
         model: modelId,
         contents: [

@@ -37,6 +37,7 @@ describe("Security and Authorization", () => {
             })
           };
         }
+        return undefined;
       })
     };
 

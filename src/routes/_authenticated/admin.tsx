@@ -22,7 +22,7 @@ function AdminPage() {
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
-      const { error } = await supabase.rpc("set_user_role", { target_user_id: userId, new_role: newRole });
+      const { error } = await supabase.rpc("set_user_role", { target_user_id: userId, new_role: newRole as "admin" | "faculty" | "placement" | "pending" | "student" });
       if (error) throw error;
     },
     onSuccess: () => {

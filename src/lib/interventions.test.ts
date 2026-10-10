@@ -7,15 +7,16 @@ describe("Intervention suggestions", () => {
     id: "uuid",
     roll_no: "KR1",
     department: "CSE",
-    academic_risk: "Low",
-    placement_risk: "Low",
-    score_academic: 80,
-    score_placement: 80,
-    score_total: 80,
-    risk_level: "Low",
-    last_updated: new Date().toISOString(),
+    year: 2,
+    academicIndex: 80,
+    placementIndex: 80,
+    successScore: 80,
+    academicRisk: "Low",
+    placementRisk: "Low",
+    segment: "High Academic / High Placement",
+    riskFactors: [],
     name: "Test Student",
-    cgpa: "8.0",
+    cgpa: 8,
     attendance: 85,
     backlogs: 0,
     lms_activity: 80,
@@ -26,7 +27,7 @@ describe("Intervention suggestions", () => {
   };
 
   it("High-risk student with multiple issues generates multiple suggestions", () => {
-    const student = { ...baseStudent, attendance: 50, cgpa: "4.5", backlogs: 3, placement_readiness: 30 };
+    const student = { ...baseStudent, attendance: 50, cgpa: 4.5, backlogs: 3, placement_readiness: 30 };
     const suggestions = generateSuggestions(student);
     expect(suggestions.length).toBeGreaterThan(1);
     expect(suggestions.some(s => s.priority === 'High')).toBe(true);
@@ -39,7 +40,7 @@ describe("Intervention suggestions", () => {
   });
 
   it("Each suggestion has requiresFacultyReview: true", () => {
-    const student = { ...baseStudent, attendance: 50, cgpa: "4.5" };
+    const student = { ...baseStudent, attendance: 50, cgpa: 4.5 };
     const suggestions = generateSuggestions(student);
     expect(suggestions.length).toBeGreaterThan(0);
     suggestions.forEach(s => {
@@ -67,7 +68,7 @@ describe("Intervention suggestions", () => {
     const student = { 
       ...baseStudent, 
       attendance: 55, 
-      cgpa: "5.5", 
+      cgpa: 5.5, 
       backlogs: 1, 
       lms_activity: 40,
       placement_readiness: 40,
