@@ -135,7 +135,7 @@ Analyze this student data and the user query to provide insights in JSON format.
     const tg = Date.now();
     try {
       const ai = new GoogleGenAI({ apiKey: key });
-      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.8-flash";
+      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.5-flash";
       const response = await ai.models.generateContent({
         model: modelId,
         contents: [
@@ -162,7 +162,7 @@ Analyze this student data and the user query to provide insights in JSON format.
       console.error(`[ai ${reqId}] failed status=${status}`, JSON.stringify(mark));
       if (err?.name === "TimeoutError" || err?.name === "AbortError")
         return { reply: "", error: "The assistant took too long to respond. Please try again." };
-      if (status === 429) return { reply: "", error: "The assistant is busy right now. Please wait a moment and retry." };
+      if (status === 429 || status === 503) return { reply: "", error: "The assistant is busy right now. Please wait a moment and retry." };
       return { reply: "", error: "The assistant is unavailable right now." };
     }
   });
