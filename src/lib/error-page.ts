@@ -1,4 +1,5 @@
-export function renderErrorPage(): string {
+export function renderErrorPage(error?: any): string {
+  const errorText = error ? (error.stack || error.message || String(error)) : 'Unknown error';
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -20,6 +21,11 @@ export function renderErrorPage(): string {
     <div class="card">
       <h1>This page didn't load</h1>
       <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <div style="background: #eee; padding: 10px; margin-bottom: 20px; text-align: left; overflow: auto; max-height: 300px;">
+        <pre style="font-size: 11px; margin: 0; white-space: pre-wrap; word-break: break-all;">${errorText
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')}</pre>
+      </div>
       <div class="actions">
         <button class="primary" onclick="location.reload()">Try again</button>
         <a class="secondary" href="/">Go home</a>
