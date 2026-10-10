@@ -219,6 +219,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      student_feedback: {
+        Args: never
+        Returns: {
+          feedback_score: number
+          id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "faculty" | "student" | "placement" | "pending"
