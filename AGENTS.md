@@ -13,3 +13,4 @@
 - Signed-in pages live under src/routes/_authenticated (client-only gate); data reads use the browser client with RLS restricted to users with a role row.
 - AI Insights runs in a server function (src/lib/ai.functions.ts) that grounds answers in the students table.
 - Shared surfaces and navigation use semantic glass tokens and global surface utilities so the visual theme stays consistent without changing data or scoring behavior.
+- Student feedback_score is not directly selectable; read it only via the student_feedback() RPC (admin/faculty all rows, student own row) and merge before scoring, so privacy is enforced in the database.
