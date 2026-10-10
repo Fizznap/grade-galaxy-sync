@@ -124,7 +124,7 @@ Analyze this student data and the user query to provide insights in JSON format.
 
     try {
       const ai = new GoogleGenAI({ apiKey: key });
-      const modelId = process.env["GEMINI_MODEL"] || "gemini-2.5-flash";
+      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.8-flash";
       const response = await ai.models.generateContent({
         model: modelId,
         contents: [
