@@ -43,16 +43,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
-  // A stale page after the preview restarts can't fetch its old code chunks; reload once to recover.
+  // A stale page after a redeploy can't fetch its old code chunks; reload to
+  // fetch fresh HTML. Retry up to 3 times in case the first reload is also cached.
   useEffect(() => {
     const msg = String((error as Error)?.message ?? "");
-    if (!/dynamically imported module|Importing a module script failed/i.test(msg)) return;
-    if (sessionStorage.getItem("kr-chunk-reload")) return;
-    sessionStorage.setItem("kr-chunk-reload", "1");
+    if (!/dynamically imported module|Importing a module script failed|Failed to fetch/i.test(msg)) return;
+    const attempts = Number(sessionStorage.getItem("kr-chunk-reload") ?? "0");
+    if (attempts >= 3) return;
+    sessionStorage.setItem("kr-chunk-reload", String(attempts + 1));
     window.location.reload();
   }, [error]);
   useEffect(() => {
-    const t = setTimeout(() => sessionStorage.removeItem("kr-chunk-reload"), 10000);
+    const t = setTimeout(() => sessionStorage.removeItem("kr-chunk-reload"), 30000);
     return () => clearTimeout(t);
   }, []);
 
@@ -141,6 +143,23 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  // Chunk-load failures that happen outside the error boundary (e.g. lazy route
+  // loads during navigation) surface as unhandled rejections; reload for fresh code.
+  useEffect(() => {
+    const isChunkError = (msg: string) =>
+      /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(msg);
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const msg = String((e.reason as Error)?.message ?? e.reason ?? "");
+      if (!isChunkError(msg)) return;
+      const attempts = Number(sessionStorage.getItem("kr-chunk-reload") ?? "0");
+      if (attempts >= 3) return;
+      sessionStorage.setItem("kr-chunk-reload", String(attempts + 1));
+      window.location.reload();
+    };
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => window.removeEventListener("unhandledrejection", onRejection);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
