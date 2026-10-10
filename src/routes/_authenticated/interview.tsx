@@ -95,11 +95,11 @@ function Studio() {
           <div className="mb-1 flex justify-between text-xs text-subtle"><span>{done ? "All questions answered" : `Question ${i + 1} of ${total}`}</span><span>{i}/{total} answered</span></div>
           <div className="h-2 overflow-hidden rounded-full bg-surface-2"><div className="h-full bg-primary transition-all" style={{ width: `${(i / total) * 100}%` }} /></div>
         </div>
-        {last && <EvalCard q={active.questions[i - 1]} a={last} n={i} />}
+        {last && <EvalCard q={active.questions[i - 1]!} a={last} n={i} />}
         {!done ? (
           <Card className="mt-4">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-subtle">{active.questions[i].kind} · {active.questions[i].topic}</div>
-            <p className="mt-2 text-base font-medium">{active.questions[i].text}</p>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-subtle">{active.questions[i]!.kind} · {active.questions[i]!.topic}</div>
+            <p className="mt-2 text-base font-medium">{active.questions[i]!.text}</p>
             <Textarea aria-label="Your answer" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type your answer…" className="mt-4 min-h-40" disabled={busy === "submit"} maxLength={5000} />
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-xs text-subtle">{draft.length}/5000</span>
@@ -208,7 +208,7 @@ function Result({ s, onBack }: { s: Session; onBack: () => void }) {
           </>
         ) : <p className="mt-4 text-sm text-muted-foreground">This interview wasn't finished, so there's no final summary.</p>}
       </Card>
-      {s.answers.map((a, i) => <EvalCard key={i} q={s.questions[i]} a={a} n={i + 1} />)}
+      {s.answers.map((a, i) => <EvalCard key={i} q={s.questions[i]!} a={a} n={i + 1} />)}
       <p className="mt-4 text-xs text-subtle">{NOTE}</p>
     </>
   );
