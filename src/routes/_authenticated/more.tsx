@@ -19,13 +19,17 @@ const items = [
   { to: "/profile", label: "Settings", desc: "Preferences and scoring model", icon: Settings },
 ] as const;
 
+const studentItems = ["/interview", "/notifications", "/profile"];
+
 function More() {
   const navigate = useNavigate();
+  const { role } = Route.useRouteContext() as { role?: string };
+  const visible = role === "student" ? items.filter((i) => studentItems.includes(i.to)) : items;
   return (
     <>
       <PageHeader eyebrow="KRYPTEDU" title="More" />
       <div className="card-surface divide-y overflow-hidden">
-        {items.map(({ to, label, desc, icon: Icon }) => (
+        {visible.map(({ to, label, desc, icon: Icon }) => (
           <Link key={label} to={to} className="group flex items-center gap-4 px-5 py-5 transition-colors hover:bg-secondary/70">
             <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-secondary/70 text-primary-deep"><Icon className="size-[20px]" strokeWidth={1.6} /></div>
             <div className="flex-1"><div className="text-sm font-medium">{label}</div><div className="text-xs text-subtle">{desc}</div></div>
