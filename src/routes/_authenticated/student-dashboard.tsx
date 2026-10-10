@@ -27,7 +27,8 @@ function StudentDashboard() {
       if (!userData.user) throw new Error("Not logged in");
       const { data, error } = await supabase.from('students').select('id, roll_no, name, department, year, cgpa, attendance, lms_activity, engagement, placement_readiness, skills_score, backlogs, user_id').eq('user_id', userData.user.id).single();
       if (error) throw error;
-      return score(data as unknown as StudentRow);
+      const { data: fb } = await supabase.rpc('student_feedback');
+      return score({ ...(data as unknown as StudentRow), feedback_score: fb?.[0]?.feedback_score ?? 0 });
     }
   });
 
