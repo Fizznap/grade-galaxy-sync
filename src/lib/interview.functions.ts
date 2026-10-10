@@ -55,7 +55,7 @@ export const submitAnswer = createServerFn({ method: "POST" })
     const questions = session.questions as unknown as Question[];
     const answers = session.answers as unknown as Answer[];
     if (session.status !== "in_progress" || data.index !== answers.length || !questions[data.index]) return { evaluation: null, error: "This question was already answered." };
-    const q = questions[data.index];
+    const q = questions[data.index]!;
     const crit = RUBRIC[q.kind];
     const res = await geminiJson(
       `Role: ${session.target_role}. Level: ${session.difficulty}. Question type: ${q.kind}.\nQuestion: ${q.text}\nCandidate's typed answer:\n"""${data.answer}"""\n\nScore each criterion 0-100: ${crit.join("; ")}. Use exactly those criterion names. Give short actionable feedback, 1-3 strengths, 1-3 improvements, and a concise example of a stronger answer. If the answer is off-topic or empty of substance, score low.`,
@@ -83,7 +83,7 @@ export const finishInterview = createServerFn({ method: "POST" })
     const questions = session.questions as unknown as Question[];
     const answers = session.answers as unknown as Answer[];
     if (answers.length === 0) return { error: "Answer at least one question first." };
-    const transcript = answers.map((a, i) => `Q${i + 1} [${questions[i].kind}, ${questions[i].topic}] ${questions[i].text}\nAnswer: ${a.answer}\nScore: ${a.evaluation.score}. Improvements: ${a.evaluation.improvements.join("; ")}`).join("\n\n");
+    const transcript = answers.map((a, i) => `Q${i + 1} [${questions[i]?.kind}, ${questions[i]?.topic}] ${questions[i]?.text}\nAnswer: ${a.answer}\nScore: ${a.evaluation.score}. Improvements: ${a.evaluation.improvements.join("; ")}`).join("\n\n");
     const res = await geminiJson(
       `Summarise this ${session.target_role} mock interview (${session.difficulty}). Base everything only on these answers:\n\n${transcript}\n\nGive a short overview, recurring weaknesses, topics to practise and recommended next steps.`,
       SYS,
