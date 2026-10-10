@@ -14,4 +14,4 @@
 - AI Insights runs in a server function (src/lib/ai.functions.ts) that grounds answers in the students table.
 - Shared surfaces and navigation use semantic glass tokens and global surface utilities so the visual theme stays consistent without changing data or scoring behavior.
 - Student feedback_score is not directly selectable; read it only via the student_feedback() RPC (admin/faculty all rows, student own row) and merge before scoring, so privacy is enforced in the database.
-- Mock interview sessions are written only by server functions (service role after verifying the caller); browsers get read-only access, so AI scores can't be forged.
+- Mock interview sessions are written only by server functions using the caller's authenticated client (RLS: owner insert/update, owner/admin/placement read); all validation, ownership checks and score computation happen server-side. No service-role key is required, so the feature works on external deployments (e.g. Vercel) where that key is unavailable.
