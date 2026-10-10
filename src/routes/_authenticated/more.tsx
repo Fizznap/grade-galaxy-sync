@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, ChevronRight, Database, FileText, HelpCircle, LogOut, Settings, Sparkles, UserCircle } from "lucide-react";
+import { Bell, ChevronRight, Database, FileText, HelpCircle, LogOut, Mic, Settings, Sparkles, UserCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/kr";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/more")({
 const items = [
   { to: "/integration", label: "Data Integration", desc: "Import CSVs across six data sources", icon: Database },
   { to: "/insights", label: "AI Insights", desc: "Ask questions about your cohort", icon: Sparkles },
+  { to: "/interview", label: "Mock Interview Studio", desc: "Practise interviews with AI feedback", icon: Mic },
   { to: "/reports", label: "Reports", desc: "Export student success reports", icon: FileText },
   { to: "/notifications", label: "Notifications", desc: "Risk alerts and due follow-ups", icon: Bell },
   { to: "/profile", label: "Profile", desc: "Your account", icon: UserCircle },

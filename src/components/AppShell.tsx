@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
-  Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle, ArrowUpRight,
+  Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle, ArrowUpRight, Mic,
 } from "lucide-react";
 import { Wordmark } from "./kr";
 import { ProfileIdButton } from "./IdCard";
@@ -18,6 +18,7 @@ const primary = [
 const secondary = [
   { to: "/integration", label: "Data Integration", icon: Database },
   { to: "/insights", label: "AI Insights", icon: Sparkles },
+  { to: "/interview", label: "Mock Interviews", icon: Mic },
   { to: "/reports", label: "Reports", icon: FileText },
   { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/profile", label: "Profile & Settings", icon: UserCircle },
