@@ -57,6 +57,13 @@
       "when": 1791604245630,
       "tag": "0007_interview_sessions_owner_write",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791604339178,
+      "tag": "0008_interview_sessions_authenticated_write_grant",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+grant insert, update on public.interview_sessions to authenticated;
