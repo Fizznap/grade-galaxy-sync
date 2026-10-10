@@ -16,10 +16,13 @@ export const askInsights = createServerFn({ method: "POST" })
     const t0 = Date.now();
     const mark: Record<string, number> = {};
     const lap = (k: string, since: number) => { mark[k] = Date.now() - since; };
-    const { data: roleData } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId).single();
+    // A user may hold several role rows; pick the most privileged instead of failing on .single().
+    const { data: roleRows, error: roleErr } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId);
     lap("auth_ms", t0);
-    const userRole = roleData?.role || "pending";
-    if (userRole === "pending") return { reply: "", error: "Account pending approval." };
+    if (roleErr) { console.error(`[ai ${reqId}] role lookup failed`); return { reply: "", error: "Couldn't verify your access. Please sign in again." }; }
+    const roles = (roleRows ?? []).map((r) => r.role as string);
+    const userRole = ["admin", "faculty", "placement", "student"].find((r) => roles.includes(r)) ?? "pending";
+    if (userRole === "pending") return { reply: "", error: "Your account is pending approval, so AI Insights isn't available yet." };
 
     const key = process.env["GOOGLE_API_KEY"] || process.env["GEMINI_API_KEY"];
 
@@ -175,7 +178,10 @@ Analyze this student data and the user query to provide insights in JSON format.
       console.error(`[ai ${reqId}] failed status=${status}`, JSON.stringify(mark));
       if (err?.name === "TimeoutError" || err?.name === "AbortError")
         return { reply: "", error: "The assistant took too long to respond. Please try again." };
-      if (status === 429 || status === 503) return { reply: "", error: "The assistant is busy right now. Please wait a moment and retry." };
-      return { reply: "", error: "The assistant is unavailable right now." };
+      if (status === 429) return { reply: "", error: "The AI service's usage limit was reached. Please wait a minute and retry." };
+      if (status === 503) return { reply: "", error: "The AI service is temporarily overloaded. Please retry shortly." };
+      if (status === 400 || status === 404) return { reply: "", error: "The AI model configuration is invalid. Ask an admin to check the model setting." };
+      if (status === 401 || status === 403) return { reply: "", error: "The AI service rejected the server's API key. Ask an admin to check the key." };
+      return { reply: "", error: `The assistant is unavailable right now (ref ${reqId}).` };
     }
   });
