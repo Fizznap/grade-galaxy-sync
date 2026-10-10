@@ -61,8 +61,7 @@ Administrators, faculty, placement officers and students. Each role sees only wh
 | AI Insights (Gemini) | Implemented; depends on a Gemini API key with available quota |
 | Mock Interview Studio with saved history | Implemented; depends on the same Gemini key |
 | Student dashboard | Implemented; requires the account to be linked to a student record |
-| Real institutional data feeds (SIS/LMS APIs) | Not implemented. Data enters through CSV import |
-| Forced password change on first sign-in | Not supported by the authentication provider |
+
 
 The dataset contains **36 synthetic students**. It contains no real student data.
 
