@@ -144,6 +144,23 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  // Chunk-load failures that happen outside the error boundary (e.g. lazy route
+  // loads during navigation) surface as unhandled rejections; reload for fresh code.
+  useEffect(() => {
+    const isChunkError = (msg: string) =>
+      /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(msg);
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const msg = String((e.reason as Error)?.message ?? e.reason ?? "");
+      if (!isChunkError(msg)) return;
+      const attempts = Number(sessionStorage.getItem("kr-chunk-reload") ?? "0");
+      if (attempts >= 3) return;
+      sessionStorage.setItem("kr-chunk-reload", String(attempts + 1));
+      window.location.reload();
+    };
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => window.removeEventListener("unhandledrejection", onRejection);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
