@@ -29,7 +29,7 @@ export const askInsights = createServerFn({ method: "POST" })
     let fallbackReply = "";
 
     if (userRole === "student") {
-      const { data: student, error } = await context.supabase.from("students").select("*").eq("user_id", context.userId).single();
+      const { data: student, error } = await context.supabase.from("students").select("id, roll_no, name, department, year, cgpa, attendance, lms_activity, engagement, placement_readiness, skills_score, backlogs, user_id").eq("user_id", context.userId).single();
       if (error || !student) return { reply: "", error: "Could not load student data." };
       
       const scoredStudent = score(student as unknown as StudentRow);
