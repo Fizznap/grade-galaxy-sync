@@ -97,6 +97,51 @@ export type Database = {
           },
         ]
       }
+      interview_sessions: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          difficulty: string
+          id: string
+          interview_type: string
+          overall_score: number | null
+          questions: Json
+          status: string
+          summary: Json | null
+          target_role: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          difficulty: string
+          id?: string
+          interview_type: string
+          overall_score?: number | null
+          questions?: Json
+          status?: string
+          summary?: Json | null
+          target_role: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          interview_type?: string
+          overall_score?: number | null
+          questions?: Json
+          status?: string
+          summary?: Json | null
+          target_role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_reads: {
         Row: {
           notification_key: string
