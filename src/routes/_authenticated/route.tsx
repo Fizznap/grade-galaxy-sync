@@ -10,7 +10,8 @@ export const Route = createFileRoute("/_authenticated")({
     if (!data.user) throw redirect({ to: "/" });
     const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', data.user.id).single();
     const role = roleData?.role;
-    if (role === 'student' && (location.pathname === '/dashboard' || location.pathname === '/')) {
+    const studentAllowed = ['/student-dashboard', '/interview', '/notifications', '/profile', '/more'];
+    if (role === 'student' && !studentAllowed.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'))) {
       throw redirect({ to: "/student-dashboard" });
     }
     return { user: data.user, role };

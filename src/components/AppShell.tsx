@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouteContext, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   Home, Users, BarChart3, ClipboardCheck, MoreHorizontal, Database, Sparkles, FileText, Bell, UserCircle, ArrowUpRight, Mic,
@@ -7,7 +7,7 @@ import { Wordmark } from "./kr";
 import { ProfileIdButton } from "./IdCard";
 import { cn } from "@/lib/utils";
 
-const primary = [
+const staffPrimary = [
   { to: "/dashboard", label: "Home", icon: Home },
   { to: "/students", label: "Students", icon: Users },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -15,7 +15,7 @@ const primary = [
   { to: "/more", label: "More", icon: MoreHorizontal },
 ] as const;
 
-const secondary = [
+const staffSecondary = [
   { to: "/integration", label: "Data Integration", icon: Database },
   { to: "/insights", label: "AI Insights", icon: Sparkles },
   { to: "/interview", label: "Mock Interviews", icon: Mic },
@@ -24,7 +24,21 @@ const secondary = [
   { to: "/profile", label: "Profile & Settings", icon: UserCircle },
 ] as const;
 
+const studentPrimary = [
+  { to: "/student-dashboard", label: "My Dashboard", icon: Home },
+  { to: "/interview", label: "Interviews", icon: Mic },
+  { to: "/notifications", label: "Alerts", icon: Bell },
+  { to: "/more", label: "More", icon: MoreHorizontal },
+] as const;
+const studentSecondary = [
+  { to: "/profile", label: "Profile & Settings", icon: UserCircle },
+] as const;
+
 export function AppShell({ children }: { children: ReactNode }) {
+  const { role } = useRouteContext({ from: "/_authenticated" }) as { role?: string };
+  const isStudent = role === "student";
+  const primary: readonly { to: string; label: string; icon: typeof Home }[] = isStudent ? studentPrimary : staffPrimary;
+  const secondary: readonly { to: string; label: string; icon: typeof Home }[] = isStudent ? studentSecondary : staffSecondary;
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (to: string) => path === to || path.startsWith(to + "/");
   const moreActive = secondary.some((s) => isActive(s.to)) || isActive("/more");
@@ -64,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      {!isActive("/insights") && <Link to="/insights" className="press fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ai px-5 py-3 text-sm font-semibold text-primary-foreground shadow-float lg:hidden"><span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full border border-primary-foreground/40 text-xs font-semibold">K</span> Ask KRYPTEDU <ArrowUpRight className="size-4 shrink-0" /></Link>}
+      {!isStudent && !isActive("/insights") && <Link to="/insights" className="press fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ai px-5 py-3 text-sm font-semibold text-primary-foreground shadow-float lg:hidden"><span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full border border-primary-foreground/40 text-xs font-semibold">K</span> Ask KRYPTEDU <ArrowUpRight className="size-4 shrink-0" /></Link>}
 
       <nav aria-label="Main navigation" className="glass fixed inset-x-0 bottom-4 z-30 mx-auto flex w-[calc(100%-2rem)] max-w-md justify-between rounded-[26px] p-2 lg:hidden">
         {primary.map(({ to, label, icon: Icon }) => {
