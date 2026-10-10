@@ -69,6 +69,11 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         </p>
         <p className="mt-3 break-words rounded-lg bg-secondary px-3 py-2 text-left font-mono text-[11px] text-muted-foreground">
           Error details: {String((error as Error)?.message || error).slice(0, 240)}
+          {(() => {
+            // Code location only (bundle file + position) so a crash can be traced; no data or secrets.
+            const m = String((error as Error)?.stack ?? "").match(/\/assets\/([\w.-]+\.js):(\d+):(\d+)/);
+            return m ? ` · at ${m[1]}:${m[2]}:${m[3]}` : "";
+          })()}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
