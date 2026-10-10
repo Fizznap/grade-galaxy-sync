@@ -5,9 +5,13 @@ import { score, type StudentRow } from "./scoring";
 export const studentsQuery = queryOptions({
   queryKey: ["students"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("students").select("*").order("name");
+    const [{ data, error }, fb] = await Promise.all([
+      supabase.from("students").select("id, roll_no, name, department, year, cgpa, attendance, lms_activity, engagement, placement_readiness, skills_score, backlogs, user_id").order("name"),
+      supabase.rpc("student_feedback"),
+    ]);
     if (error) throw error;
-    return (data as unknown as StudentRow[]).map(score);
+    const feedback = new Map((fb.data ?? []).map((r) => [r.id, r.feedback_score]));
+    return (data as unknown as StudentRow[]).map((s) => score({ ...s, feedback_score: feedback.get(s.id) ?? 0 }));
   },
 });
 

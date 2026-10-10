@@ -29,10 +29,11 @@ export const askInsights = createServerFn({ method: "POST" })
     let fallbackReply = "";
 
     if (userRole === "student") {
-      const { data: student, error } = await context.supabase.from("students").select("*").eq("user_id", context.userId).single();
+      const { data: student, error } = await context.supabase.from("students").select("id, roll_no, name, department, year, cgpa, attendance, lms_activity, engagement, placement_readiness, skills_score, backlogs, user_id").eq("user_id", context.userId).single();
       if (error || !student) return { reply: "", error: "Could not load student data." };
       
-      const scoredStudent = score(student as unknown as StudentRow);
+      const { data: ownFb } = await context.supabase.rpc("student_feedback");
+      const scoredStudent = score({ ...(student as unknown as StudentRow), feedback_score: ownFb?.[0]?.feedback_score ?? 0 });
       
       systemInstruction = `You are a personalized KRYPTEDU academic advisor for a student named ${scoredStudent.name}. Provide structured feedback based on their metrics.`;
       
@@ -92,10 +93,12 @@ Analyze this student data and the user query to provide insights in JSON format.
       const tq = Date.now();
       const { data: rows, error } = await context.supabase
         .from("students")
-        .select("roll_no,name,department,year,cgpa,attendance,lms_activity,engagement,placement_readiness,skills_score,backlogs");
+        .select("id,roll_no,name,department,year,cgpa,attendance,lms_activity,engagement,placement_readiness,skills_score,backlogs");
+      const { data: fbRows } = await context.supabase.rpc("student_feedback");
+      const fb = new Map((fbRows ?? []).map((r) => [r.id, r.feedback_score]));
       lap("db_ms", tq);
       if (error) return { reply: "", error: "Could not load student data." };
-      const scored = (rows as unknown as StudentRow[]).map(score);
+      const scored = (rows as unknown as StudentRow[]).map((r) => score({ ...r, feedback_score: fb.get(r.id) ?? 0 }));
       const table = scored
         .map((s) => `${s.roll_no}|${s.name}|${s.department}|Y${s.year}|CGPA ${s.cgpa}|Att ${s.attendance}|LMS ${s.lms_activity}|Eng ${s.engagement}|Plc ${s.placement_readiness}|Skl ${s.skills_score}|Backlogs ${s.backlogs}|Success ${s.successScore}|AcadRisk ${s.academicRisk}|PlcRisk ${s.placementRisk}|${s.segment}`)
         .join("\n");
