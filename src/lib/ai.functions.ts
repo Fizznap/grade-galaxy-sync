@@ -12,7 +12,12 @@ export const askInsights = createServerFn({ method: "POST" })
     return { messages: d.messages.slice(-12).map((m) => ({ role: m.role, content: String(m.content).slice(0, 4000) })) };
   })
   .handler(async ({ data, context }) => {
+    const reqId = Math.random().toString(36).slice(2, 10);
+    const t0 = Date.now();
+    const mark: Record<string, number> = {};
+    const lap = (k: string, since: number) => { mark[k] = Date.now() - since; };
     const { data: roleData } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId).single();
+    lap("auth_ms", t0);
     const userRole = roleData?.role || "pending";
     if (userRole === "pending") return { reply: "", error: "Account pending approval." };
 
@@ -84,7 +89,11 @@ Analyze this student data and the user query to provide insights in JSON format.
         roleInstructions = "You must focus your analysis on academics, attendance, and learning outcomes.";
       }
 
-      const { data: rows, error } = await context.supabase.from("students").select("*");
+      const tq = Date.now();
+      const { data: rows, error } = await context.supabase
+        .from("students")
+        .select("roll_no,name,department,year,cgpa,attendance,lms_activity,engagement,placement_readiness,skills_score,backlogs");
+      lap("db_ms", tq);
       if (error) return { reply: "", error: "Could not load student data." };
       const scored = (rows as unknown as StudentRow[]).map(score);
       const table = scored
@@ -122,24 +131,48 @@ Analyze this student data and the user query to provide insights in JSON format.
       return { reply: fallbackReply, error: null };
     }
 
+    mark["prompt_chars"] = system.length + systemInstruction.length;
+    const tg = Date.now();
     try {
       const ai = new GoogleGenAI({ apiKey: key });
-      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.8-flash";
-      const response = await ai.models.generateContent({
+      const modelId = process.env["GEMINI_MODEL"] || "gemini-3.5-flash";
+      mark[`model_${modelId}`] = 1;
+      const call = () => ai.models.generateContent({
         model: modelId,
         contents: [
           { role: "user", parts: [{ text: system }] },
-          ...data.messages.map(m => ({ role: m.role, parts: [{ text: m.content }] }))
+          ...data.messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }))
         ],
         config: {
           systemInstruction: systemInstruction,
           responseMimeType: responseSchema ? "application/json" : "text/plain",
-          responseSchema: responseSchema as any
+          responseSchema: responseSchema as any,
+          // Low thinking keeps answers grounded but avoids long reasoning delays.
+          thinkingConfig: { thinkingLevel: "low" } as any,
+          abortSignal: AbortSignal.timeout(45000),
         }
       });
+      let response;
+      try { response = await call(); }
+      catch (e: any) {
+        // One bounded retry for transient overload (503) or rate limit (429).
+        if (e?.status !== 503 && e?.status !== 429) throw e;
+        mark["retries"] = 1;
+        await new Promise((r) => setTimeout(r, 1200));
+        response = await call();
+      }
+      lap("gemini_ms", tg);
+      lap("total_ms", t0);
+      console.log(`[ai ${reqId}] ok`, JSON.stringify(mark));
       return { reply: response.text ?? "", error: null };
     } catch (err: any) {
-      console.error("AI gateway error", err);
+      lap("gemini_ms", tg);
+      lap("total_ms", t0);
+      const status = err?.status ?? err?.name ?? "error";
+      console.error(`[ai ${reqId}] failed status=${status}`, JSON.stringify(mark));
+      if (err?.name === "TimeoutError" || err?.name === "AbortError")
+        return { reply: "", error: "The assistant took too long to respond. Please try again." };
+      if (status === 429 || status === 503) return { reply: "", error: "The assistant is busy right now. Please wait a moment and retry." };
       return { reply: "", error: "The assistant is unavailable right now." };
     }
   });
