@@ -98,7 +98,7 @@ function Analytics() {
             {grpList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">No students in this group{dept !== "All" ? ` in ${dept}` : ""}.</p> :
               [...grpList].sort((a, b) => a.successScore - b.successScore).map((s) => (
                 <div key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <StudentLink id={s.id} name={s.name} />
+                  <StudentLink id={s.id} className="font-medium hover:underline">{s.name}</StudentLink>
                   <span className="text-xs text-subtle">{s.roll_no} · Score {s.successScore} · Att. {s.attendance}% · CGPA {s.cgpa}</span>
                 </div>
               ))}
